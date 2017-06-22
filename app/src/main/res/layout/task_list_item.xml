@@ -2,41 +2,42 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/task_list_item"
         android:layout_width="fill_parent"
-        android:layout_height="64dp"
+        android:layout_height="72dp"
         android:paddingTop="8dp" >
 
         <TextView
             android:id="@+id/task_num"
             android:layout_width="64dp"
             android:layout_height="32dp"
-            android:text="1"
-            android:textSize="32dp"
+            android:text="3"
+            android:textSize="36dp"
             android:textAlignment="center"
             android:gravity="top"
             android:layout_alignParentTop="true"
             android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true" />
+            android:layout_alignParentStart="true"
+            android:layout_above="@+id/task_date" />
 
         <TextView
             android:id="@+id/task_date"
             android:layout_width="wrap_content"
-            android:layout_height="24dp"
+            android:layout_height="20dp"
             android:text="Date"
             android:textSize="12dp"
             android:textAlignment="center"
             android:gravity="bottom"
-            android:layout_below="@+id/task_num"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
             android:layout_toLeftOf="@+id/task_title"
-            android:layout_toStartOf="@+id/task_title" />
+            android:layout_toStartOf="@+id/task_title"
+            android:layout_alignParentBottom="true" />
 
         <TextView
             android:id="@+id/task_title"
             android:layout_width="wrap_content"
             android:layout_height="56dp"
             android:text="Title"
-            android:textSize="16dp"
+            android:textSize="21dp"
             android:layout_marginLeft="8dp"
             android:layout_toRightOf="@+id/task_num"
             android:layout_alignParentRight="true"

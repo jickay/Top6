@@ -2,4 +2,5 @@
     <string name="app_name">Top6</string>
     <string name="action_settings">Settings</string>
     <string name="title_activity_new_task">NewTask</string>
+    <string name="title_activity_edit_task">EditTask</string>
 </resources>

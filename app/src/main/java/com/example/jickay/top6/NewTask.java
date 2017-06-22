@@ -48,7 +48,7 @@ public class NewTask extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent();
-                setResult(Activity.RESULT_CANCELED);
+                setResult(Activity.RESULT_CANCELED, intent);
                 finish();
             }
         });
