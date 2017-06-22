@@ -20,20 +20,31 @@ public class TaskAdapter extends ArrayAdapter
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(final int position, View convertView, ViewGroup parent) {
         Task task = (Task) getItem(position);
 
         if (convertView==null) {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.task_list_item, parent, false);
         }
 
-        TextView taskNum = (TextView) convertView.findViewById(R.id.task_num);
+        final TextView taskNum = (TextView) convertView.findViewById(R.id.task_num);
         TextView taskDate = (TextView) convertView.findViewById(R.id.task_date);
         TextView taskTitle = (TextView) convertView.findViewById(R.id.task_title);
 
         taskNum.setText(Integer.toString(position+1));
         taskDate.setText(task.getDate());
         taskTitle.setText(task.getTitle());
+
+        taskNum.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (taskNum.getText() != "OK") {
+                    taskNum.setText("OK");
+                } else {
+                    taskNum.setText(Integer.toString(position+1));
+                }
+            }
+        });
 
         return convertView;
     }
