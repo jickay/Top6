@@ -10,12 +10,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
-import static com.example.jickay.top6.MainActivity.allTasks;
 
 public class EditTask extends AppCompatActivity {
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,13 +22,15 @@ public class EditTask extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        //
         final EditText title = (EditText) findViewById(R.id.edit_title);
-        final EditText date = (EditText) findViewById(R.id.edit_date);
+        final EditText date = (EditText) findViewById(R.id.date);
         final EditText desc = (EditText) findViewById(R.id.edit_description);
 
+        //Get info from Task object to fill EditTexts
         Bundle b = getIntent().getBundleExtra("taskData");
-        final Task currentTask = allTasks.get(b.getInt("num"));
-        inflateTask(currentTask,title,date,desc);
+        final Task currentTask = MainActivity.allTasks.get(b.getInt("num"));
+        fillTask(currentTask,title,date,desc);
 
         FloatingActionButton save = (FloatingActionButton) findViewById(R.id.save_task);
         save.setOnClickListener(new View.OnClickListener() {
@@ -49,6 +49,7 @@ public class EditTask extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 deleteTask(currentTask);
+                Toast.makeText(getApplicationContext(), "Task deleted", Toast.LENGTH_SHORT).show();
 
                 Intent intent = new Intent();
                 setResult(Activity.RESULT_CANCELED, intent);
@@ -56,18 +57,18 @@ public class EditTask extends AppCompatActivity {
             }
         });
 
-        EditText dateField = (EditText) findViewById(R.id.edit_date);
+        final EditText dateField = (EditText) findViewById(R.id.date);
         dateField.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 if (hasFocus) {
-                    showDatePickerDialog(v);
+                    showDatePickerDialog(v,dateField);
                 }
             }
         });
     }
 
-    protected void inflateTask(Task currentTask,
+    protected void fillTask(Task currentTask,
                                EditText title,
                                EditText date,
                                EditText desc) {
@@ -86,10 +87,10 @@ public class EditTask extends AppCompatActivity {
     }
 
     protected void deleteTask(Task currentTask) {
-        allTasks.remove(currentTask);
+        MainActivity.allTasks.remove(currentTask);
     }
 
-    public void showDatePickerDialog(View v) {
+    public void showDatePickerDialog(View v, EditText field) {
         DialogFragment df = new DatePickerFragment();
         df.show(getFragmentManager(), "datePicker");
     }

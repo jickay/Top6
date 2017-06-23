@@ -53,7 +53,7 @@ public class NewTask extends AppCompatActivity {
             }
         });
 
-        dateField = (EditText) findViewById(R.id.new_date);
+        dateField = (EditText) findViewById(R.id.date);
         dateField.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
@@ -68,7 +68,7 @@ public class NewTask extends AppCompatActivity {
         Bundle b = new Bundle();
 
         EditText title = (EditText) findViewById(R.id.new_title);
-        EditText date = (EditText) findViewById(R.id.new_date);
+        EditText date = (EditText) findViewById(R.id.date);
         EditText desc = (EditText) findViewById(R.id.new_description);
         b.putString("title",title.getText().toString());
         b.putString("date",date.getText().toString());

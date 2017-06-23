@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.DragEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Menu;
@@ -90,26 +91,33 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
-        if (requestCode == 0 && resultCode == Activity.RESULT_OK) {
-            Bundle newData = intent.getBundleExtra("NewTask");
+        // For New Task activity
+        if (requestCode == 0) {
+            if (resultCode == Activity.RESULT_OK) {
+                Bundle newData = intent.getBundleExtra("NewTask");
 
-            Task task = new Task(newData.getString("title"),
-                    newData.getString("date"),
-                    newData.getString("description"));
-            allTasks.add(task);
+                Task task = new Task(newData.getString("title"),
+                        newData.getString("date"),
+                        newData.getString("description"));
+                allTasks.add(task);
 
-            ListView listView = (ListView) findViewById(R.id.task_list);
-            listView.setAdapter(taskAdapter);
+                ListView listView = (ListView) findViewById(R.id.task_list);
+                listView.setAdapter(taskAdapter);
 
-            //taskAdapter.add(task);
-
-            Toast.makeText(getApplicationContext(), "New task added", Toast.LENGTH_SHORT).show();
-        } else if (requestCode == 1 && resultCode == Activity.RESULT_OK) {
-            ListView listView = (ListView) findViewById(R.id.task_list);
-            listView.setAdapter(taskAdapter);
-            Toast.makeText(getApplicationContext(), "Task edits saved", Toast.LENGTH_SHORT).show();
-        } else if (resultCode == Activity.RESULT_CANCELED){
-            Toast.makeText(getApplicationContext(), "New task cancelled", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "New task added", Toast.LENGTH_SHORT).show();
+            } else if (resultCode == Activity.RESULT_CANCELED) {
+                Toast.makeText(getApplicationContext(), "New task cancelled", Toast.LENGTH_SHORT).show();
+            }
+        // For Edit Task activity
+        } else if (requestCode == 1) {
+            if (resultCode == Activity.RESULT_OK) {
+                ListView listView = (ListView) findViewById(R.id.task_list);
+                listView.setAdapter(taskAdapter);
+                Toast.makeText(getApplicationContext(), "Task edits saved", Toast.LENGTH_SHORT).show();
+            } else if (resultCode == Activity.RESULT_CANCELED) {
+                ListView listView = (ListView) findViewById(R.id.task_list);
+                listView.setAdapter(taskAdapter);
+            }
         }
     }
 }
