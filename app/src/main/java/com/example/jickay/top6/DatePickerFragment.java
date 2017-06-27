@@ -44,7 +44,10 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
         }
         String dateString = monthString + " " + Integer.toString(day);
 
-        EditText field = (EditText) getActivity().findViewById(R.id.date);
-        field.setText(dateString);
+        EditText dateField = (EditText) getActivity().findViewById(R.id.date);
+        dateField.setText(dateString);
+        dateField.clearFocus();
+        EditText descField = (EditText)getActivity().findViewById(R.id.description);
+        descField.requestFocus();
     }
 }

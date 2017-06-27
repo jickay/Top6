@@ -1,23 +1,14 @@
 package com.example.jickay.top6;
 
 import android.app.Activity;
-import android.app.DatePickerDialog;
-import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
-import android.widget.DatePicker;
 import android.widget.EditText;
-import android.app.FragmentManager;
-import android.widget.Toast;
-
-import java.util.Calendar;
 
 public class NewTask extends AppCompatActivity {
     static EditText dateField;
@@ -30,11 +21,16 @@ public class NewTask extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+        // Get components by id
+        final EditText title = (EditText) findViewById(R.id.title);
+        final EditText date = (EditText) findViewById(R.id.date);
+        final EditText desc = (EditText) findViewById(R.id.description);
+
         FloatingActionButton save = (FloatingActionButton) findViewById(R.id.save_new_task);
         save.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Bundle b = saveTask();
+                Bundle b = saveTask(title,date,desc);
 
                 Intent intent = new Intent();
                 intent.putExtra("NewTask", b);
@@ -64,12 +60,11 @@ public class NewTask extends AppCompatActivity {
         });
     }
 
-    protected Bundle saveTask() {
+    protected Bundle saveTask(EditText title,
+                              EditText date,
+                              EditText desc) {
         Bundle b = new Bundle();
 
-        EditText title = (EditText) findViewById(R.id.new_title);
-        EditText date = (EditText) findViewById(R.id.date);
-        EditText desc = (EditText) findViewById(R.id.new_description);
         b.putString("title",title.getText().toString());
         b.putString("date",date.getText().toString());
         b.putString("description",desc.getText().toString());

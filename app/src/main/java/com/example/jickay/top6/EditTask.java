@@ -1,11 +1,12 @@
 package com.example.jickay.top6;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.DialogFragment;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -23,21 +24,22 @@ public class EditTask extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         //
-        final EditText title = (EditText) findViewById(R.id.edit_title);
+        final EditText title = (EditText) findViewById(R.id.title);
         final EditText date = (EditText) findViewById(R.id.date);
-        final EditText desc = (EditText) findViewById(R.id.edit_description);
+        final EditText desc = (EditText) findViewById(R.id.description);
 
         //Get info from Task object to fill EditTexts
         Bundle b = getIntent().getBundleExtra("taskData");
-        final Task currentTask = MainActivity.allTasks.get(b.getInt("num"));
+        final Task currentTask = MainActivity.getIncompleteTasks().get(b.getInt("num"));
         fillTask(currentTask,title,date,desc);
 
         FloatingActionButton save = (FloatingActionButton) findViewById(R.id.save_task);
         save.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // Save edits in Task object
                 saveTask(currentTask,title,date,desc);
-
+                // Pass result back to MainActivity
                 Intent intent = new Intent();
                 setResult(Activity.RESULT_OK, intent);
                 finish();
@@ -48,12 +50,24 @@ public class EditTask extends AppCompatActivity {
         delete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                deleteTask(currentTask);
-                Toast.makeText(getApplicationContext(), "Task deleted", Toast.LENGTH_SHORT).show();
-
-                Intent intent = new Intent();
-                setResult(Activity.RESULT_CANCELED, intent);
-                finish();
+                // Popup dialog to confirm cancellation of task
+                new AlertDialog.Builder(EditTask.this)
+                        .setTitle(R.string.delete_question)
+                        .setMessage(currentTask.getTitle())
+                        .setCancelable(true)
+                        .setNegativeButton(android.R.string.cancel, null)
+                        .setPositiveButton(R.string.delete,
+                                new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface di, int i) {
+                                        // Remove task from ArrayList if deletion confirmed
+                                        deleteTask(currentTask);
+                                        Intent intent = new Intent();
+                                        setResult(Activity.RESULT_CANCELED, intent);
+                                        finish();
+                                    }
+                                })
+                        .show();
             }
         });
 
@@ -86,8 +100,9 @@ public class EditTask extends AppCompatActivity {
         currentTask.setDescription(desc.getText().toString());
     }
 
-    protected void deleteTask(Task currentTask) {
-        MainActivity.allTasks.remove(currentTask);
+    protected void deleteTask(final Task currentTask) {
+        MainActivity.getIncompleteTasks().remove(currentTask);
+        Toast.makeText(getApplicationContext(), R.string.task_deleted, Toast.LENGTH_SHORT).show();
     }
 
     public void showDatePickerDialog(View v, EditText field) {

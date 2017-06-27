@@ -7,4 +7,21 @@
     <string name="title_hint">Enter a new task</string>
     <string name="date_hint">Choose a date</string>
     <string name="desc_hint">Add a description (optional)</string>
+
+    <string name="delete_question">Want to delete this task?</string>
+    <string name="delete">Delete</string>
+    <string name="starting_message">Here are your Top 6 tasks for today!</string>
+    <string name="new_task_added">New task added</string>
+    <string name="new_task_cancelled">New task cancelled</string>
+    <string name="task_edits_saved">Task edits saved</string>
+    <string name="task_completed">Task completed!</string>
+    <string name="task_incomplete">Task incomplete</string>
+    <string name="task_deleted">Task deleted</string>
+    <string name="title_activity_completed_tasks">CompletedTasks</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="all_tasks">All Tasks</string>
+    <string name="completed_tasks">Completed Tasks</string>
+    <string name="title_activity_all_tasks">AllTasks</string>
 </resources>

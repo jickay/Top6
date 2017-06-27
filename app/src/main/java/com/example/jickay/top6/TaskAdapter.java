@@ -1,13 +1,12 @@
 package com.example.jickay.top6;
 
-import android.content.Context;
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -20,9 +19,10 @@ public class TaskAdapter extends ArrayAdapter
 {
     int LEADING_DAYS = 10;
 
-    public TaskAdapter(Context context, ArrayList<Task> tasks) {
+    public TaskAdapter(MainActivity context, ArrayList<Task> tasks) {
         super(context,0,tasks);
     }
+    public TaskAdapter(AllTasks context, ArrayList<Task> tasks) { super(context,0,tasks); }
 
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
@@ -49,8 +49,12 @@ public class TaskAdapter extends ArrayAdapter
             public void onClick(View v) {
                 if (taskNum.getText() != "OK") {
                     taskNum.setText("OK");
+                    MainActivity.getIncompleteTasks().get(position).setCompletion(true);
+                    Toast.makeText(getContext(), R.string.task_completed,Toast.LENGTH_SHORT).show();
                 } else {
                     taskNum.setText(Integer.toString(position+1));
+                    MainActivity.getIncompleteTasks().get(position).setCompletion(false);
+                    Toast.makeText(getContext(), R.string.task_incomplete,Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -62,6 +66,7 @@ public class TaskAdapter extends ArrayAdapter
         int difference = taskDay - currentDay;
 
         int daysRemaining = LEADING_DAYS-difference;
+
         //Set progress bar length
         if (difference <= LEADING_DAYS) {
             bar.setProgress(100/LEADING_DAYS * daysRemaining);
