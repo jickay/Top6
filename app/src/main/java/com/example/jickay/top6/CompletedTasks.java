@@ -12,16 +12,16 @@ import android.widget.ListView;
 
 import java.util.ArrayList;
 
-public class AllTasks extends AppCompatActivity {
+public class CompletedTasks extends AppCompatActivity {
 
-    private static ArrayList<Task> incompleteTasks = MainActivity.getIncompleteTasks();
+    private static ArrayList<Task> completedTasks = MainActivity.getCompletedTasks();
 
     private ListView listView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_all_tasks);
+        setContentView(R.layout.activity_completed_tasks);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -29,22 +29,12 @@ public class AllTasks extends AppCompatActivity {
         // Assign listview
         listView = (ListView) findViewById(R.id.task_list);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.add_task_btn);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(AllTasks.this, NewTask.class);
-                startActivityForResult(intent,0);
-            }
-        });
-
-
         // Listener for clicking a task in the list
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent intent = new Intent(AllTasks.this, EditTask.class);
-                Task currentTask = incompleteTasks.get(position);
+                Intent intent = new Intent(CompletedTasks.this, EditTask.class);
+                Task currentTask = completedTasks.get(position);
 
                 Bundle b = new Bundle();
                 b.putInt("num",position);
@@ -57,7 +47,7 @@ public class AllTasks extends AppCompatActivity {
             }
         });
 
-        TaskAdapter taskAdapter = new TaskAdapter(this, incompleteTasks);
+        TaskAdapter taskAdapter = new TaskAdapter(this, completedTasks);
         listView.setAdapter(taskAdapter);
     }
 

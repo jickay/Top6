@@ -1,5 +1,7 @@
 package com.example.jickay.top6;
 
+import android.app.Activity;
+import android.support.design.widget.Snackbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -7,6 +9,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -23,10 +27,12 @@ public class TaskAdapter extends ArrayAdapter
         super(context,0,tasks);
     }
     public TaskAdapter(AllTasks context, ArrayList<Task> tasks) { super(context,0,tasks); }
+    public TaskAdapter(CompletedTasks context, ArrayList<Task> tasks) { super(context,0,tasks); }
 
     @Override
-    public View getView(final int position, View convertView, ViewGroup parent) {
-        Task task = (Task) getItem(position);
+    public View getView(final int position, View convertView, final ViewGroup parent) {
+        final Task task = (Task) getItem(position);
+        final String taskPos = Integer.toString(position + 1);
 
         if (convertView==null) {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.task_list_item, parent, false);
@@ -38,8 +44,12 @@ public class TaskAdapter extends ArrayAdapter
         TextView taskTitle = (TextView) convertView.findViewById(R.id.task_title);
         ProgressBar bar = (ProgressBar) convertView.findViewById(R.id.task_urgency);
 
-        //Set text for views
-        taskNum.setText(Integer.toString(position+1));
+        //Set initial text for views
+        if (task.getCompletion()) {
+            taskNum.setText("OK");
+        } else {
+            taskNum.setText(taskPos);
+        }
         taskDate.setText(task.getDate());
         taskTitle.setText(task.getTitle());
 
@@ -49,12 +59,12 @@ public class TaskAdapter extends ArrayAdapter
             public void onClick(View v) {
                 if (taskNum.getText() != "OK") {
                     taskNum.setText("OK");
-                    MainActivity.getIncompleteTasks().get(position).setCompletion(true);
-                    Toast.makeText(getContext(), R.string.task_completed,Toast.LENGTH_SHORT).show();
+                    task.setCompletion(true);
+                    completeSnackbar(parent,task,taskNum,taskPos);
                 } else {
-                    taskNum.setText(Integer.toString(position+1));
-                    MainActivity.getIncompleteTasks().get(position).setCompletion(false);
-                    Toast.makeText(getContext(), R.string.task_incomplete,Toast.LENGTH_SHORT).show();
+                    taskNum.setText(taskPos);
+                    task.setCompletion(false);
+                    Snackbar.make(parent, R.string.task_incomplete, Snackbar.LENGTH_LONG).show();
                 }
             }
         });
@@ -73,6 +83,19 @@ public class TaskAdapter extends ArrayAdapter
         }
 
         return convertView;
+    }
+
+    protected void completeSnackbar(final ViewGroup parent, final Task task, final TextView taskNum, final String taskPos) {
+        Snackbar mySnackbar = Snackbar.make(parent, R.string.task_completed, Snackbar.LENGTH_LONG)
+            .setAction(R.string.undo, new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    task.setCompletion(false);
+                    taskNum.setText(taskPos);
+                    Snackbar.make(parent, R.string.task_incomplete, Snackbar.LENGTH_SHORT).show();
+                }
+            });
+        mySnackbar.show();
     }
 
 }

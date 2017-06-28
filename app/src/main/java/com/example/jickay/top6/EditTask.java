@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -61,7 +62,7 @@ public class EditTask extends AppCompatActivity {
                                     @Override
                                     public void onClick(DialogInterface di, int i) {
                                         // Remove task from ArrayList if deletion confirmed
-                                        deleteTask(currentTask);
+                                        MainActivity.getIncompleteTasks().remove(currentTask);
                                         Intent intent = new Intent();
                                         setResult(Activity.RESULT_CANCELED, intent);
                                         finish();
@@ -98,11 +99,6 @@ public class EditTask extends AppCompatActivity {
         currentTask.setTitle(title.getText().toString());
         currentTask.setDate(date.getText().toString());
         currentTask.setDescription(desc.getText().toString());
-    }
-
-    protected void deleteTask(final Task currentTask) {
-        MainActivity.getIncompleteTasks().remove(currentTask);
-        Toast.makeText(getApplicationContext(), R.string.task_deleted, Toast.LENGTH_SHORT).show();
     }
 
     public void showDatePickerDialog(View v, EditText field) {

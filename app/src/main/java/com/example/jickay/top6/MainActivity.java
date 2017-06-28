@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -22,6 +23,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static ArrayList<Task> incompleteTasks = new ArrayList<>();
     private static ArrayList<Task> completedTasks = new ArrayList<>();
+    private static ArrayList<Task> deletedTasks = new ArrayList<>();
 
     private int lastDateUsed;
 
@@ -71,22 +73,23 @@ public class MainActivity extends AppCompatActivity {
 
         // Daily startup methods
 
-            // Clean up completed tasks from last day
-        boolean isNewDay = checkIfNewDay();
-        dailyTaskCleanup(isNewDay);
-        Toast.makeText(getApplicationContext(), R.string.starting_message, Toast.LENGTH_LONG).show();
-            // Show latest incomplete tasks
+        // Clean up completed tasks from last day
+//        boolean isNewDay = checkIfNewDay();
+//        dailyTaskCleanup(isNewDay);
 
+        Snackbar.make(findViewById(R.id.main_activity), R.string.starting_message, Snackbar.LENGTH_LONG).show();
+
+        // Show latest incomplete tasks
         taskAdapter = new TaskAdapter(this, incompleteTasks);
         listView.setAdapter(taskAdapter);
     }
 
-    @Override
-    protected void onStop() {
-        super.onStop();
-        Calendar c = Calendar.getInstance();
-        lastDateUsed = c.get(Calendar.DATE);
-    }
+//    @Override
+//    protected void onStop() {
+//        super.onStop();
+//        Calendar c = Calendar.getInstance();
+//        lastDateUsed = c.get(Calendar.DATE);
+//    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -102,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
+        // Each menu option
         if (id == R.id.action_all_tasks) {
             Intent toAllTasks = new Intent(MainActivity.this, AllTasks.class);
             startActivity(toAllTasks);
@@ -116,6 +119,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (id == R.id.action_settings) {
+            Intent toSettings = new Intent(MainActivity.this, Settings.class);
+            startActivity(toSettings);
             return true;
         }
 
@@ -141,42 +146,44 @@ public class MainActivity extends AppCompatActivity {
                 incompleteTasks.add(task);
                 // Refresh list to show new tasks
                 listView.setAdapter(taskAdapter);
-                Toast.makeText(getApplicationContext(), R.string.new_task_added, Toast.LENGTH_SHORT).show();
+                Snackbar.make(findViewById(R.id.main_activity), R.string.new_task_added, Snackbar.LENGTH_SHORT).show();
 
             // New task cancelled
             } else if (resultCode == Activity.RESULT_CANCELED) {
-                Toast.makeText(getApplicationContext(), R.string.new_task_cancelled, Toast.LENGTH_SHORT).show();
+                Snackbar.make(findViewById(R.id.main_activity), R.string.new_task_cancelled, Snackbar.LENGTH_SHORT).show();
             }
         // For Edit Task activity
         } else if (requestCode == 1) {
             // Task edits to be saved
             if (resultCode == Activity.RESULT_OK) {
                 listView.setAdapter(taskAdapter);
-                Toast.makeText(getApplicationContext(), R.string.task_edits_saved, Toast.LENGTH_SHORT).show();
+                Snackbar.make(findViewById(R.id.main_activity), R.string.task_edits_saved, Snackbar.LENGTH_SHORT).show();
             }
-//            else if (resultCode == Activity.RESULT_CANCELED) {
-//                listView.setAdapter(taskAdapter);
+            else if (resultCode == Activity.RESULT_CANCELED) {
+                listView.setAdapter(taskAdapter);
+                Snackbar.make(findViewById(R.id.main_activity), R.string.task_deleted, Snackbar.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+//    protected boolean checkIfNewDay() {
+//        // Get today's date
+//        Calendar c = Calendar.getInstance();
+//        int today = c.get(Calendar.DATE);
+//
+//        return today != lastDateUsed;
+//    }
+//
+//    protected void dailyTaskCleanup(boolean isNewDay) {
+//        // If today different than last day used move completed Task objects to completedTasks list
+//        if (isNewDay) {
+//            for (Task task : incompleteTasks) {
+//                if (task.getCompletion()) {
+//                    incompleteTasks.remove(task);
+//                    completedTasks.add(task);
+//                }
 //            }
-        }
-    }
-
-    protected boolean checkIfNewDay() {
-        // Get today's date
-        Calendar c = Calendar.getInstance();
-        int today = c.get(Calendar.DATE);
-
-        return today != lastDateUsed;
-    }
-
-    protected void dailyTaskCleanup(boolean isNewDay) {
-        // If today different than last day used move completed Task objects to completedTasks list
-        if (isNewDay) {
-            for (Task task : incompleteTasks) {
-                if (task.getCompletion()) {
-                    incompleteTasks.remove(task);
-                    completedTasks.add(task);
-                }
-            }
-        }
-    }
+//            Toast.makeText(getApplicationContext(), R.string.completed_cleanup, Toast.LENGTH_SHORT).show();
+//        }
+//    }
 }
