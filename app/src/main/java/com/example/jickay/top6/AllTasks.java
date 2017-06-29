@@ -8,6 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ExpandableListView;
 import android.widget.ListView;
 
 import java.util.ArrayList;
@@ -16,7 +17,7 @@ public class AllTasks extends AppCompatActivity {
 
     private static ArrayList<Task> incompleteTasks = MainActivity.getIncompleteTasks();
 
-    private ListView listView;
+    private ExpandableListView listView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,7 +28,7 @@ public class AllTasks extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // Assign listview
-        listView = (ListView) findViewById(R.id.task_list);
+        listView = (ExpandableListView) findViewById(R.id.task_list);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.add_task_btn);
         fab.setOnClickListener(new View.OnClickListener() {

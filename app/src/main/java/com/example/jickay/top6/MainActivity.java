@@ -4,22 +4,25 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.AdapterView;
+import android.widget.ExpandableListView;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 
-import static android.support.v4.app.ActivityCompat.startActivity;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
 
     private static ArrayList<Task> incompleteTasks = new ArrayList<>();
     private static ArrayList<Task> completedTasks = new ArrayList<>();
@@ -28,21 +31,20 @@ public class MainActivity extends AppCompatActivity {
     private int lastDateUsed;
 
     private TaskAdapter taskAdapter;
-    private ListView listView;
+    private ExpandableListView listView;
+    private DrawerLayout drawer;
 
     // Getter methods
     public static ArrayList<Task> getIncompleteTasks() { return incompleteTasks; }
     public static ArrayList<Task> getCompletedTasks() { return completedTasks; }
+    public static ArrayList<Task> getDeletedTasks() { return deletedTasks; }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_navigation);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        // Assign listview
-        listView = (ListView) findViewById(R.id.task_list);
 
         // Add task button
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.add_task_btn);
@@ -54,10 +56,20 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // Navigation drawer
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        toggle.syncState();
+
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+
         // Listener for clicking a task in the list
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        listView = (ExpandableListView) findViewById(R.id.task_list);
+        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent = new Intent(MainActivity.this, EditTask.class);
 
                 Bundle b = new Bundle();
@@ -68,6 +80,7 @@ public class MainActivity extends AppCompatActivity {
                 intent.putExtra("taskData",b);
 
                 startActivityForResult(intent,1);
+                return true;
             }
         });
 
@@ -91,40 +104,42 @@ public class MainActivity extends AppCompatActivity {
 //        lastDateUsed = c.get(Calendar.DATE);
 //    }
 
+    /*
+        Navigation drawer menu methods
+     */
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
+    public void onBackPressed() {
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
     }
 
+    @SuppressWarnings("StatementWithEmptyBody")
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
+    public boolean onNavigationItemSelected(MenuItem item) {
+        // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        // Each menu option
-        if (id == R.id.action_all_tasks) {
-            Intent toAllTasks = new Intent(MainActivity.this, AllTasks.class);
-            startActivity(toAllTasks);
-            return true;
+        if (id == R.id.nav_camera) {
+            // Handle the camera action
+        } else if (id == R.id.nav_gallery) {
+
+        } else if (id == R.id.nav_slideshow) {
+
+        } else if (id == R.id.nav_manage) {
+
+        } else if (id == R.id.nav_share) {
+
+        } else if (id == R.id.nav_send) {
+
         }
 
-        if (id == R.id.action_completed_tasks) {
-            Intent toCompletedTasks = new Intent(MainActivity.this, CompletedTasks.class);
-            startActivity(toCompletedTasks);
-            return true;
-        }
-
-        if (id == R.id.action_settings) {
-            Intent toSettings = new Intent(MainActivity.this, Settings.class);
-            startActivity(toSettings);
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);
+        return true;
     }
 
     /*
@@ -132,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
     Activates after called activity returns a result to MainActivity
      */
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+    protected void onActivityResult(int requestCode, int resultCode, final Intent intent) {
         // For New Task activity
         if (requestCode == 0) {
             // New task to be added
@@ -156,12 +171,28 @@ public class MainActivity extends AppCompatActivity {
         } else if (requestCode == 1) {
             // Task edits to be saved
             if (resultCode == Activity.RESULT_OK) {
+                String action = intent.getStringExtra("Action");
+                Log.d("Edit result",action);
+                if (action.matches("delete")) {
+                    Snackbar mySnackbar = Snackbar.make(findViewById(R.id.main_activity), R.string.task_deleted, Snackbar.LENGTH_LONG)
+                            .setAction(R.string.undo, new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    // Undo recent task delete
+                                    Task lastDeletedTask = deletedTasks.get(deletedTasks.size()-1);
+                                    MainActivity.getIncompleteTasks().add(intent.getExtras().getInt("UndoPos"),lastDeletedTask);
+                                    Snackbar.make(findViewById(R.id.main_activity), R.string.task_restored, Snackbar.LENGTH_SHORT).show();
+                                    listView.setAdapter(taskAdapter);
+                                }
+                            });
+                    mySnackbar.show();
+                } else if (action.matches("edit")) {
+                    Snackbar.make(findViewById(R.id.main_activity), R.string.task_edits_saved, Snackbar.LENGTH_SHORT).show();
+                }
                 listView.setAdapter(taskAdapter);
-                Snackbar.make(findViewById(R.id.main_activity), R.string.task_edits_saved, Snackbar.LENGTH_SHORT).show();
             }
             else if (resultCode == Activity.RESULT_CANCELED) {
                 listView.setAdapter(taskAdapter);
-                Snackbar.make(findViewById(R.id.main_activity), R.string.task_deleted, Snackbar.LENGTH_SHORT).show();
             }
         }
     }

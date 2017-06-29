@@ -24,13 +24,13 @@ public class EditTask extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        //
+        // Get views by id
         final EditText title = (EditText) findViewById(R.id.title);
         final EditText date = (EditText) findViewById(R.id.date);
         final EditText desc = (EditText) findViewById(R.id.description);
 
-        //Get info from Task object to fill EditTexts
-        Bundle b = getIntent().getBundleExtra("taskData");
+        // Get info from Task object to fill EditTexts
+        final Bundle b = getIntent().getBundleExtra("taskData");
         final Task currentTask = MainActivity.getIncompleteTasks().get(b.getInt("num"));
         fillTask(currentTask,title,date,desc);
 
@@ -42,6 +42,7 @@ public class EditTask extends AppCompatActivity {
                 saveTask(currentTask,title,date,desc);
                 // Pass result back to MainActivity
                 Intent intent = new Intent();
+                intent.putExtra("Action","edit");
                 setResult(Activity.RESULT_OK, intent);
                 finish();
             }
@@ -61,10 +62,12 @@ public class EditTask extends AppCompatActivity {
                                 new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface di, int i) {
-                                        // Remove task from ArrayList if deletion confirmed
-                                        MainActivity.getIncompleteTasks().remove(currentTask);
+                                        int taskPos = deleteTask(currentTask);
+
                                         Intent intent = new Intent();
-                                        setResult(Activity.RESULT_CANCELED, intent);
+                                        intent.putExtra("Action","delete");
+                                        intent.putExtra("UndoPos",taskPos);
+                                        setResult(Activity.RESULT_OK, intent);
                                         finish();
                                     }
                                 })
@@ -99,6 +102,16 @@ public class EditTask extends AppCompatActivity {
         currentTask.setTitle(title.getText().toString());
         currentTask.setDate(date.getText().toString());
         currentTask.setDescription(desc.getText().toString());
+    }
+
+    protected int deleteTask(Task currentTask) {
+        // Get index of currentTask
+        int taskPos = MainActivity.getIncompleteTasks().indexOf(currentTask);
+        // Move to deletedTasks arraylist if deletion confirmed
+        MainActivity.getIncompleteTasks().remove(currentTask);
+        MainActivity.getDeletedTasks().add(currentTask);
+
+        return taskPos;
     }
 
     public void showDatePickerDialog(View v, EditText field) {

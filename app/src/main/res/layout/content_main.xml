@@ -8,9 +8,11 @@
     tools:context="com.example.jickay.top6.MainActivity"
     tools:showIn="@layout/activity_main">
 
-    <ListView
+    <ExpandableListView
         android:id="@+id/task_list"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent" />
+        android:layout_height="fill_parent"
+        android:indicatorLeft="320dp"
+        android:divider="#000000"/>
 
 </android.support.constraint.ConstraintLayout>
