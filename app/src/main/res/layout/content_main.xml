@@ -8,11 +8,18 @@
     tools:context="com.example.jickay.top6.MainActivity"
     tools:showIn="@layout/activity_main">
 
-    <ExpandableListView
-        android:id="@+id/task_list"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:indicatorLeft="320dp"
-        android:divider="#000000"/>
+    <android.support.v7.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/recycler">
+
+        <!--<ExpandableListView-->
+            <!--android:id="@+id/task_list"-->
+            <!--android:layout_width="fill_parent"-->
+            <!--android:layout_height="fill_parent"-->
+            <!--android:indicatorLeft="320dp"-->
+            <!--android:divider="#000000"/>-->
+
+    </android.support.v7.widget.RecyclerView>
 
 </android.support.constraint.ConstraintLayout>
