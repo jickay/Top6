@@ -3,6 +3,7 @@ package com.example.jickay.top6;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
@@ -18,6 +19,7 @@ import android.view.MenuItem;
 import android.widget.AdapterView;
 import android.widget.ExpandableListView;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 
@@ -33,6 +35,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private TaskAdapter taskAdapter;
     private ExpandableListView listView;
     private DrawerLayout drawer;
+    private ConstraintLayout emptyText;
 
     // Getter methods
     public static ArrayList<Task> getIncompleteTasks() { return incompleteTasks; }
@@ -45,6 +48,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setContentView(R.layout.activity_navigation);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        // Find view by id
+        emptyText = (ConstraintLayout) findViewById(R.id.empty_layout);
 
         // Add task button
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.add_task_btn);
@@ -90,7 +96,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 //        boolean isNewDay = checkIfNewDay();
 //        dailyTaskCleanup(isNewDay);
 
-        Snackbar.make(findViewById(R.id.main_activity), R.string.starting_message, Snackbar.LENGTH_LONG).show();
+        if (incompleteTasks.size()>6) {
+            Snackbar.make(findViewById(R.id.main_activity), R.string.starting_message, Snackbar.LENGTH_LONG).show();
+        } else if (incompleteTasks.size()>0 && incompleteTasks.size()<6) {
+            listView.setVisibility(View.VISIBLE);
+            emptyText.setVisibility(View.GONE);
+            Snackbar.make(findViewById(R.id.main_activity), R.string.notfull_message, Snackbar.LENGTH_LONG).show();
+        }
 
         // Show latest incomplete tasks
         taskAdapter = new TaskAdapter(this, incompleteTasks);
@@ -103,6 +115,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 //        Calendar c = Calendar.getInstance();
 //        lastDateUsed = c.get(Calendar.DATE);
 //    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        if (incompleteTasks.isEmpty()) {
+            listView.setVisibility(View.GONE);
+            emptyText.setVisibility(View.VISIBLE);
+        } else {
+            listView.setVisibility(View.VISIBLE);
+            emptyText.setVisibility(View.GONE);
+        }
+    }
 
     /*
         Navigation drawer menu methods
@@ -123,18 +148,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
+        if (id == R.id.nav_all_tasks) {
+            Intent intent = new Intent(MainActivity.this,AllTasks.class);
+            startActivity(intent);
+        } else if (id == R.id.nav_completed_tasks) {
+            Intent intent = new Intent(MainActivity.this,CompletedTasks.class);
+            startActivity(intent);
+        } else if (id == R.id.nav_settings) {
+            Intent intent = new Intent(MainActivity.this,Settings.class);
+            startActivity(intent);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -183,6 +205,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                                     MainActivity.getIncompleteTasks().add(intent.getExtras().getInt("UndoPos"),lastDeletedTask);
                                     Snackbar.make(findViewById(R.id.main_activity), R.string.task_restored, Snackbar.LENGTH_SHORT).show();
                                     listView.setAdapter(taskAdapter);
+
+                                    listView.setVisibility(View.VISIBLE);
+                                    emptyText.setVisibility(View.INVISIBLE);
                                 }
                             });
                     mySnackbar.show();
