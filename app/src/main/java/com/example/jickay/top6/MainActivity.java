@@ -7,10 +7,12 @@ import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.Fragment;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
@@ -32,7 +34,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private int lastDateUsed;
 
-    private TaskAdapter taskAdapter;
+    private RecyclerView recyclerView;
+    private TaskRecyclerAdapter taskAdapter;
     private ExpandableListView listView;
     private DrawerLayout drawer;
     private ConstraintLayout emptyText;
@@ -44,19 +47,22 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d("Tag","Main Activity created");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigation);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         // Find view by id
-        emptyText = (ConstraintLayout) findViewById(R.id.empty_layout);
+//        recyclerView = (RecyclerView) findViewById(R.id.recycler);
+//        emptyText = (ConstraintLayout) findViewById(R.id.empty_layout);
 
         // Add task button
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.add_task_btn);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Log.d("Tag","New task clicked");
                 Intent intent = new Intent(MainActivity.this, NewTask.class);
                 startActivityForResult(intent,0);
             }
@@ -71,24 +77,24 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        // Listener for clicking a task in the list
-        listView = (ExpandableListView) findViewById(R.id.task_list);
-        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent intent = new Intent(MainActivity.this, EditTask.class);
-
-                Bundle b = new Bundle();
-                b.putInt("num",position);
-                b.putString("title", incompleteTasks.get(position).getTitle());
-                b.putString("date", incompleteTasks.get(position).getDate());
-                b.putString("desc", incompleteTasks.get(position).getDescription());
-                intent.putExtra("taskData",b);
-
-                startActivityForResult(intent,1);
-                return true;
-            }
-        });
+//        // Listener for clicking a task in the list
+//        listView = (ExpandableListView) findViewById(R.id.task_list);
+//        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+//            @Override
+//            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+//                Intent intent = new Intent(MainActivity.this, EditTask.class);
+//
+//                Bundle b = new Bundle();
+//                b.putInt("num",position);
+//                b.putString("title", incompleteTasks.get(position).getTitle());
+//                b.putString("date", incompleteTasks.get(position).getDate());
+//                b.putString("desc", incompleteTasks.get(position).getDescription());
+//                intent.putExtra("taskData",b);
+//
+//                startActivityForResult(intent,1);
+//                return true;
+//            }
+//        });
 
         // Daily startup methods
 
@@ -99,14 +105,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (incompleteTasks.size()>6) {
             Snackbar.make(findViewById(R.id.main_activity), R.string.starting_message, Snackbar.LENGTH_LONG).show();
         } else if (incompleteTasks.size()>0 && incompleteTasks.size()<6) {
-            listView.setVisibility(View.VISIBLE);
-            emptyText.setVisibility(View.GONE);
+//            listView.setVisibility(View.VISIBLE);
+//            emptyText.setVisibility(View.GONE);
             Snackbar.make(findViewById(R.id.main_activity), R.string.notfull_message, Snackbar.LENGTH_LONG).show();
+        } else {
+//            emptyText.setVisibility(View.GONE);
         }
 
         // Show latest incomplete tasks
-        taskAdapter = new TaskAdapter(this, incompleteTasks);
-        listView.setAdapter(taskAdapter);
+//        taskAdapter = new TaskRecyclerAdapter(this, incompleteTasks);
+//        recyclerView.setAdapter(taskAdapter);
     }
 
 //    @Override
@@ -116,18 +124,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 //        lastDateUsed = c.get(Calendar.DATE);
 //    }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-
-        if (incompleteTasks.isEmpty()) {
-            listView.setVisibility(View.GONE);
-            emptyText.setVisibility(View.VISIBLE);
-        } else {
-            listView.setVisibility(View.VISIBLE);
-            emptyText.setVisibility(View.GONE);
-        }
-    }
+//    @Override
+//    public void onStart() {
+//        super.onStart();
+//
+//        if (incompleteTasks.isEmpty()) {
+//            listView.setVisibility(View.GONE);
+//            emptyText.setVisibility(View.VISIBLE);
+//        } else {
+//            listView.setVisibility(View.VISIBLE);
+//            emptyText.setVisibility(View.GONE);
+//        }
+//    }
 
     /*
         Navigation drawer menu methods
@@ -182,7 +190,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         newData.getString("description"));
                 incompleteTasks.add(task);
                 // Refresh list to show new tasks
-                listView.setAdapter(taskAdapter);
+//                listView.setAdapter(taskAdapter);
                 Snackbar.make(findViewById(R.id.main_activity), R.string.new_task_added, Snackbar.LENGTH_SHORT).show();
 
             // New task cancelled
@@ -194,7 +202,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             // Task edits to be saved
             if (resultCode == Activity.RESULT_OK) {
                 String action = intent.getStringExtra("Action");
-                Log.d("Edit result",action);
                 if (action.matches("delete")) {
                     Snackbar mySnackbar = Snackbar.make(findViewById(R.id.main_activity), R.string.task_deleted, Snackbar.LENGTH_LONG)
                             .setAction(R.string.undo, new View.OnClickListener() {
@@ -204,20 +211,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                                     Task lastDeletedTask = deletedTasks.get(deletedTasks.size()-1);
                                     MainActivity.getIncompleteTasks().add(intent.getExtras().getInt("UndoPos"),lastDeletedTask);
                                     Snackbar.make(findViewById(R.id.main_activity), R.string.task_restored, Snackbar.LENGTH_SHORT).show();
-                                    listView.setAdapter(taskAdapter);
-
-                                    listView.setVisibility(View.VISIBLE);
-                                    emptyText.setVisibility(View.INVISIBLE);
+//                                    listView.setAdapter(taskAdapter);
+//
+//                                    listView.setVisibility(View.VISIBLE);
+//                                    emptyText.setVisibility(View.INVISIBLE);
                                 }
                             });
                     mySnackbar.show();
                 } else if (action.matches("edit")) {
                     Snackbar.make(findViewById(R.id.main_activity), R.string.task_edits_saved, Snackbar.LENGTH_SHORT).show();
                 }
-                listView.setAdapter(taskAdapter);
+//                listView.setAdapter(taskAdapter);
             }
             else if (resultCode == Activity.RESULT_CANCELED) {
-                listView.setAdapter(taskAdapter);
+//                listView.setAdapter(taskAdapter);
             }
         }
     }
