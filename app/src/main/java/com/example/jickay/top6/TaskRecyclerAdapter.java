@@ -1,5 +1,6 @@
 package com.example.jickay.top6;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -12,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.w3c.dom.Text;
 
@@ -29,6 +31,8 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
     Context context;
     ArrayList<Task> tasks;
 
+    CardView card;
+
     public TaskRecyclerAdapter(Context c, ArrayList<Task> t) {
         context = c;
         tasks = t;
@@ -39,6 +43,7 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
         TextView task_title;
         TextView task_date;
         TextView task_num;
+        TextView task_desc;
 
         public ViewHolder(CardView card){
             super(card);
@@ -47,14 +52,14 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
             task_title = (TextView) cardView.findViewById(R.id.task_title);
             task_date = (TextView) cardView.findViewById(R.id.task_date);
             task_num = (TextView) cardView.findViewById(R.id.task_num);
+            task_desc = (TextView) cardView.findViewById(R.id.task_description);
         }
     }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int i) {
-        CardView card = (CardView) LayoutInflater.from(context)
+        card = (CardView) LayoutInflater.from(context)
                 .inflate(R.layout.task_card,parent,false);
-        onCardLongClick(parent,card,i);
         return new ViewHolder(card);
     }
 
@@ -63,6 +68,9 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
         viewHolder.task_title.setText(tasks.get(i).getTitle());
         viewHolder.task_date.setText(tasks.get(i).getDate());
         viewHolder.task_num.setText(Integer.toString(i + 1));
+        viewHolder.task_desc.setText(tasks.get(i).getDescription());
+
+        onCardLongClick(card,i);
     }
 
     @Override
@@ -70,8 +78,7 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
         return MainActivity.getIncompleteTasks().size();
     }
 
-    protected void onCardLongClick(final ViewGroup parent,
-                                   final CardView cardView,
+    protected void onCardLongClick(final CardView cardView,
                                    final int i) {
         // Listener for clicking a task in the list
         cardView.setOnLongClickListener(new View.OnLongClickListener() {
@@ -81,12 +88,13 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
                 Task task = tasks.get(i);
 
                 Bundle b = new Bundle();
+                b.putInt("num",i);
                 b.putString("title", task.getTitle());
                 b.putString("date", task.getDate());
                 b.putString("desc", task.getDescription());
                 intent.putExtra("taskData", b);
 
-                startActivityForResult(intent, 1);
+                ((Activity)cardView.getContext()).startActivityForResult(intent, 1);
                 return true;
             }
         });

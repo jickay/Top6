@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/task_card"
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:paddingTop="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginTop="4dp"
-        android:layout_marginBottom="4dp">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/task_card"
+    android:layout_width="match_parent"
+    android:layout_height="160dp"
+    android:layout_marginBottom="4dp"
+    android:layout_marginLeft="8dp"
+    android:layout_marginRight="8dp"
+    android:layout_marginTop="4dp"
+    android:paddingTop="8dp">
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -16,57 +17,93 @@
                 <TextView
                     android:id="@+id/task_num"
                     android:layout_width="64dp"
-                    android:layout_height="32dp"
-                    android:text="3"
-                    android:textSize="36dp"
-                    android:textAlignment="center"
-                    android:gravity="center"
-                    android:layout_alignParentTop="true"
+                    android:layout_height="64dp"
                     android:layout_alignParentLeft="true"
                     android:layout_alignParentStart="true"
+                    android:layout_alignParentTop="true"
+                    android:background="@color/colorAccent"
+                    android:gravity="center"
+                    android:text="3"
+                    android:textAlignment="center"
+                    android:textColor="@color/cardview_light_background"
+                    android:textSize="36dp"
                     android:layout_above="@+id/task_date" />
 
                 <TextView
                     android:id="@+id/task_date"
                     android:layout_width="wrap_content"
-                    android:layout_height="20dp"
-                    android:text="Date"
-                    android:textSize="16dp"
-                    android:textAlignment="center"
-                    android:gravity="center"
+                    android:layout_height="32dp"
                     android:layout_above="@+id/task_urgency"
                     android:layout_alignParentLeft="true"
                     android:layout_alignParentStart="true"
-                    android:layout_toLeftOf="@+id/task_title"
-                    android:layout_toStartOf="@+id/task_title" />
+                    android:background="@color/colorAccent"
+                    android:gravity="center"
+                    android:text="Date"
+                    android:textAlignment="center"
+                    android:textColor="@color/cardview_light_background"
+                    android:textSize="16dp"
+                    android:layout_alignRight="@+id/task_num"
+                    android:layout_alignEnd="@+id/task_num" />
 
                 <TextView
                     android:id="@+id/task_title"
-                    android:layout_width="wrap_content"
+                    android:layout_width="240dp"
                     android:layout_height="56dp"
-                    android:text="Title"
-                    android:textSize="21dp"
-                    android:maxLines="2"
-                    android:gravity="left|center"
-                    android:layout_marginLeft="8dp"
-                    android:layout_toRightOf="@+id/task_num"
-                    android:layout_alignParentRight="true"
                     android:layout_alignParentTop="true"
-                    android:layout_alignParentEnd="true"
-                    android:layout_alignBottom="@+id/task_date" />
+                    android:layout_margin="8dp"
+                    android:layout_toRightOf="@+id/task_num"
+                    android:gravity="left|bottom"
+                    android:maxLines="2"
+                    android:text="Title"
+                    android:textSize="21dp" />
 
                 <ProgressBar
                     android:id="@+id/task_urgency"
                     style="?android:attr/progressBarStyleHorizontal"
-                    android:progressTint="@color/progressBarForeground"
                     android:layout_width="wrap_content"
                     android:layout_height="4dp"
-                    android:layout_marginTop="8dp"
                     android:layout_alignParentBottom="true"
+                    android:layout_alignParentEnd="true"
                     android:layout_alignParentLeft="true"
-                    android:layout_alignParentStart="true"
                     android:layout_alignParentRight="true"
-                    android:layout_alignParentEnd="true" />
+                    android:layout_alignParentStart="true"
+                    android:progress="@color/progressBarForeground" />
+
+                <TextView
+                    android:id="@+id/task_description"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_above="@+id/task_urgency"
+                    android:layout_alignLeft="@+id/task_title"
+                    android:layout_alignStart="@+id/task_title"
+                    android:layout_marginBottom="8dp"
+                    android:text="TextView"
+                    android:layout_toLeftOf="@+id/imageView4"
+                    android:layout_toStartOf="@+id/imageView4"
+                    android:layout_below="@+id/task_title" />
+
+                <android.support.design.widget.FloatingActionButton
+                    android:id="@+id/floatingActionButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_margin="4dp"
+                    android:clickable="true"
+                    app:backgroundTint="@android:color/holo_red_light"
+                    app:fabSize="mini"
+                    app:srcCompat="@android:drawable/ic_menu_edit" />
+
+                <ImageView
+                    android:id="@+id/imageView4"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/task_date"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_margin="8dp"
+                    app:srcCompat="@drawable/ic_menu_manage" />
 
         </RelativeLayout>
 

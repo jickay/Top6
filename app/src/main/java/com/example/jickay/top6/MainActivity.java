@@ -47,7 +47,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.d("Tag","Main Activity created");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigation);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -77,25 +76,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-//        // Listener for clicking a task in the list
-//        listView = (ExpandableListView) findViewById(R.id.task_list);
-//        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-//            @Override
-//            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-//                Intent intent = new Intent(MainActivity.this, EditTask.class);
-//
-//                Bundle b = new Bundle();
-//                b.putInt("num",position);
-//                b.putString("title", incompleteTasks.get(position).getTitle());
-//                b.putString("date", incompleteTasks.get(position).getDate());
-//                b.putString("desc", incompleteTasks.get(position).getDescription());
-//                intent.putExtra("taskData",b);
-//
-//                startActivityForResult(intent,1);
-//                return true;
-//            }
-//        });
-
         // Daily startup methods
 
         // Clean up completed tasks from last day
@@ -111,10 +91,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } else {
 //            emptyText.setVisibility(View.GONE);
         }
-
-        // Show latest incomplete tasks
-//        taskAdapter = new TaskRecyclerAdapter(this, incompleteTasks);
-//        recyclerView.setAdapter(taskAdapter);
     }
 
 //    @Override
