@@ -1,8 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!--Main theme colors-->
     <color name="colorPrimary">#ededed</color>
     <color name="colorPrimaryDark">#000000</color>
     <color name="colorAccent">#b0e500</color>
     <color name="colorTextPrimary">#000000</color>
-    <color name="progressBarForeground">#ff581c</color>
+
+    <!--Progress bar-->
+    <color name="progressBarForeground">#000000</color>
+
+    <!--Importance colors-->
+    <color name="importance1">#b0e500</color>
+    <color name="importance2">#dbef00</color>
+    <color name="importance3">#f7f300</color>
+    <color name="importance4">#ff7f00</color>
+    <color name="importance5">#ff581c</color>
+
 </resources>

@@ -4,13 +4,21 @@
     <string name="title_activity_new_task">NewTask</string>
     <string name="title_activity_edit_task">EditTask</string>
 
-    <string name="title_hint">Enter a new task</string>
-    <string name="date_hint">Choose a date</string>
-    <string name="desc_hint">Add a description (optional)</string>
+    <!--Starting messages-->
+    <string name="starting_message">Here are your Top 6 tasks for today!</string>
+    <string name="empty_message">The task list is empty!\nHit the + button to add a new task</string>
+    <string name="notfull_message">Here are your current tasks!</string>
 
+    <!--New task activity-->
+    <string name="title_hint">What do you have to do?</string>
+    <string name="date_hint">When do you have to finish it?</string>
+    <string name="desc_hint">Add some details (optional)</string>
+
+    <!--Edit task activity-->
     <string name="delete_question">Want to delete this task?</string>
     <string name="delete">Delete</string>
-    <string name="starting_message">Here are your Top 6 tasks for today!</string>
+
+    <!--Snackbar messages-->
     <string name="new_task_added">New task added</string>
     <string name="new_task_cancelled">New task cancelled</string>
     <string name="task_edits_saved">Task edits saved</string>
@@ -101,6 +109,8 @@
     <string name="pref_title_vibrate">Vibrate</string>
     <string name="task_restored">Task restored</string>
     <string name="title_activity_navigation">Navigation</string>
-    <string name="empty_message">The task list is empty!\nHit the + button to add a new task</string>
-    <string name="notfull_message">Here are your current tasks!</string>
+    <string name="importance">Importance</string>
+    <string name="high">high</string>
+    <string name="low">low</string>
+
 </resources>

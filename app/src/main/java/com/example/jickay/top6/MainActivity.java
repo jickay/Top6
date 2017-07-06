@@ -163,7 +163,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 // Construct new Task object using data
                 Task task = new Task(newData.getString("title"),
                         newData.getString("date"),
-                        newData.getString("description"));
+                        newData.getString("description"),
+                        newData.getInt("importance"));
                 incompleteTasks.add(task);
                 // Refresh list to show new tasks
 //                listView.setAdapter(taskAdapter);
