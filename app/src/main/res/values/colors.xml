@@ -2,6 +2,7 @@
 <resources>
     <!--Main theme colors-->
     <color name="colorPrimary">#ededed</color>
+    <color name="colorPrimaryMed">#aaaaaa</color>
     <color name="colorPrimaryDark">#000000</color>
     <color name="colorAccent">#b0e500</color>
     <color name="colorTextPrimary">#000000</color>

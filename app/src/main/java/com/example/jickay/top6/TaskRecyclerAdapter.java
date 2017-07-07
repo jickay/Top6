@@ -33,6 +33,7 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
     ArrayList<Task> tasks;
 
     CardView card;
+    Task thisTask;
 
     public TaskRecyclerAdapter(Context c, ArrayList<Task> t) {
         context = c;
@@ -45,6 +46,7 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
         TextView task_date;
         TextView task_num;
         TextView task_desc;
+        ProgressBar bar;
 
         public ViewHolder(CardView card){
             super(card);
@@ -54,6 +56,7 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
             task_date = (TextView) cardView.findViewById(R.id.task_date);
             task_num = (TextView) cardView.findViewById(R.id.task_num);
             task_desc = (TextView) cardView.findViewById(R.id.task_description);
+            bar = (ProgressBar) cardView.findViewById(R.id.task_urgency);
         }
     }
 
@@ -61,6 +64,7 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
     public ViewHolder onCreateViewHolder(ViewGroup parent, int i) {
         card = (CardView) LayoutInflater.from(context)
                 .inflate(R.layout.task_card,parent,false);
+        thisTask = tasks.get(i);
         return new ViewHolder(card);
     }
 
@@ -73,6 +77,8 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
 
         viewHolder.task_num.setBackgroundColor(ContextCompat.getColor(context,getImportanceColor(i)));
         viewHolder.task_date.setBackgroundColor(ContextCompat.getColor(context,getImportanceColor(i)));
+
+        viewHolder.bar.setProgress(tasks.get(i).getUrgency());
 
         onCardLongClick(card,i);
     }
@@ -108,6 +114,9 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
         int importance = tasks.get(i).getImportance();
         int color = -1;
         switch (importance) {
+            // No value selected
+            case -1: color = R.color.colorPrimaryMed; break;
+            // Importance value selected
             case 1: color = R.color.importance1; break;
             case 2: color = R.color.importance2; break;
             case 3: color = R.color.importance3; break;
@@ -116,5 +125,7 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
         }
         return color;
     }
+
+
 
 }

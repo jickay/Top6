@@ -52,10 +52,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        // Find view by id
-//        recyclerView = (RecyclerView) findViewById(R.id.recycler);
-//        emptyText = (ConstraintLayout) findViewById(R.id.empty_layout);
-
         // Add task button
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.add_task_btn);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -206,7 +202,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
-//    protected boolean checkIfNewDay() {
+//    rtddrrotected boolean checkIfNewDay() {
 //        // Get today's date
 //        Calendar c = Calendar.getInstance();
 //        int today = c.get(Calendar.DATE);

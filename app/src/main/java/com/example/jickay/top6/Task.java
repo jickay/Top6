@@ -10,6 +10,7 @@ public class Task {
     private String date;
     private String description;
     private int importance;
+    private int urgency;
 
     private boolean completion;
 
@@ -24,11 +25,13 @@ public class Task {
     public String getDate() { return date; }
     public String getDescription() { return description; }
     public int getImportance() { return importance; }
+    public int getUrgency() { return urgency; }
     public boolean getCompletion() { return completion; }
 
     public void setTitle(String title) { this.title = title; }
     public void setDate(String date) { this.date = date; }
     public void setDescription(String desc) { this.description = desc; }
     public void setImportance (int importance) { this.importance = importance; }
+    public void setUrgency (int urgency) { this.urgency = urgency; }
     public void setCompletion(boolean completion) { this.completion = completion; }
 }

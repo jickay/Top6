@@ -1,7 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/recycler"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main_content"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:paddingTop="8dp"
-    android:paddingBottom="8dp"/>
+    android:background="@color/colorPrimaryMed">
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recycler"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp" />
+
+    <TextView
+        android:id="@+id/empty_message"
+        android:layout_width="fill_parent"
+        android:layout_height="380dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:text="@string/empty_message"
+        android:textColor="@color/cardview_dark_background"
+        android:textAlignment="gravity"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+</RelativeLayout>

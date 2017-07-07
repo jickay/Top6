@@ -8,18 +8,21 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
-import android.widget.Toast;
+
+import java.util.Calendar;
 
 
 public class EditTask extends AppCompatActivity {
 
+    int LEADING_DAYS = 10;
+
+    RadioGroup importance;
     int importanceValue = -1;
 
     @Override
@@ -33,7 +36,7 @@ public class EditTask extends AppCompatActivity {
         final EditText title = (EditText) findViewById(R.id.title);
         final EditText date = (EditText) findViewById(R.id.date);
         final EditText desc = (EditText) findViewById(R.id.description);
-        RadioGroup importance = (RadioGroup) findViewById(R.id.importance_group);
+        importance = (RadioGroup) findViewById(R.id.importance_group);
 
         // Get info from Task object to fill EditTexts
         final Bundle b = getIntent().getBundleExtra("taskData");
@@ -94,7 +97,7 @@ public class EditTask extends AppCompatActivity {
         importance.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup radioGroup, @IdRes int i) {
-                importanceValue = onRadioButtonClicked(radioGroup.findViewById(i));
+                importanceValue = setRadioValue(radioGroup.findViewById(i));
             }
         });
     }
@@ -118,6 +121,7 @@ public class EditTask extends AppCompatActivity {
         currentTask.setDate(date.getText().toString());
         currentTask.setDescription(desc.getText().toString());
         currentTask.setImportance(importanceValue);
+        currentTask.setUrgency(getProgress(currentTask));
     }
 
     protected int deleteTask(Task currentTask) {
@@ -135,33 +139,37 @@ public class EditTask extends AppCompatActivity {
         df.show(getFragmentManager(), "datePicker");
     }
 
-    public int onRadioButtonClicked(View view) {
+    public int setRadioValue(View view) {
         // Is the button now checked?
-        boolean checked = ((RadioButton) view).isChecked();
+        boolean checked = false;
         int value = -1;
 
-        // Check which radio button was clicked
-        switch(view.getId()) {
-            case R.id.importance1:
-                if (checked)
-                    value = 1;
-                break;
-            case R.id.importance2:
-                if (checked)
-                    value = 2;
-                break;
-            case R.id.importance3:
-                if (checked)
-                    value = 3;
-                break;
-            case R.id.importance4:
-                if (checked)
-                    value = 4;
-                break;
-            case R.id.importance5:
-                if (checked)
-                    value = 5;
-                break;
+        if (view != null) {
+            checked = ((RadioButton) view).isChecked();
+            // Check which radio button was clicked
+            switch(view.getId()) {
+                case R.id.importance1:
+                    if (checked)
+                        value = 1;
+                    break;
+                case R.id.importance2:
+                    if (checked)
+                        value = 2;
+                    break;
+                case R.id.importance3:
+                    if (checked)
+                        value = 3;
+                    break;
+                case R.id.importance4:
+                    if (checked)
+                        value = 4;
+                    break;
+                case R.id.importance5:
+                    if (checked)
+                        value = 5;
+                    break;
+                default: value = -1; break;
+            }
         }
 
         return value;
@@ -169,12 +177,43 @@ public class EditTask extends AppCompatActivity {
 
     private void setCheckedRadio(Task currentTask, RadioGroup radioGroup) {
         switch (currentTask.getImportance()) {
-            case 1: ((RadioButton)radioGroup.findViewById(R.id.importance1)).setChecked(true); break;
-            case 2: ((RadioButton)radioGroup.findViewById(R.id.importance2)).setChecked(true); break;
-            case 3: ((RadioButton)radioGroup.findViewById(R.id.importance3)).setChecked(true); break;
-            case 4: ((RadioButton)radioGroup.findViewById(R.id.importance4)).setChecked(true); break;
-            case 5: ((RadioButton)radioGroup.findViewById(R.id.importance5)).setChecked(true); break;
+            case 1: ((RadioButton)radioGroup.findViewById(R.id.importance1)).setChecked(true);
+                importanceValue = 1; break;
+            case 2: ((RadioButton)radioGroup.findViewById(R.id.importance2)).setChecked(true);
+                importanceValue = 2; break;
+            case 3: ((RadioButton)radioGroup.findViewById(R.id.importance3)).setChecked(true);
+                importanceValue = 3; break;
+            case 4: ((RadioButton)radioGroup.findViewById(R.id.importance4)).setChecked(true);
+                importanceValue = 4; break;
+            case 5: ((RadioButton)radioGroup.findViewById(R.id.importance5)).setChecked(true);
+                importanceValue = 5; break;
         }
+    }
+
+    private int getProgress(Task currentTask) {
+        //Calculate value for progress bar
+        final Calendar c = Calendar.getInstance();
+        int currentDay = c.get(Calendar.DAY_OF_MONTH);
+        int daysInMonth = c.getActualMaximum(Calendar.DAY_OF_MONTH);
+        int taskDay = Integer.parseInt(currentTask.getDate().split(" ")[1]);
+
+        int difference;
+        if (taskDay >= currentDay) {
+            difference = taskDay - currentDay;
+        } else {
+            int remainingDays = daysInMonth - currentDay;
+            difference = taskDay + remainingDays;
+        }
+
+        int daysRemaining = LEADING_DAYS-difference;
+        int progressValue = 0;
+
+        //Set progress bar length
+        if (difference <= LEADING_DAYS) {
+            progressValue = 100/LEADING_DAYS * daysRemaining;
+        }
+
+        return progressValue;
     }
 
 }

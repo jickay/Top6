@@ -32,7 +32,6 @@
             android:layout_height="match_parent"
             android:id="@+id/fragment"
             android:name="com.example.jickay.top6.fragment.TaskFragment" />
-        <!--<include layout="@layout/content_main_empty"/>-->
 
     </LinearLayout>
 
