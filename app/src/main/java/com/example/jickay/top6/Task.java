@@ -21,6 +21,14 @@ public class Task {
         importance = newImportance;
     }
 
+    public Task(String newTitle, String newDate, String newDescription, int newImportance, int newUrgency) {
+        title = newTitle;
+        date = newDate;
+        description = newDescription;
+        importance = newImportance;
+        urgency = newUrgency;
+    }
+
     public String getTitle() { return title; }
     public String getDate() { return date; }
     public String getDescription() { return description; }

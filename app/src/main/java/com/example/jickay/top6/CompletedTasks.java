@@ -2,14 +2,11 @@ package com.example.jickay.top6;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ExpandableListView;
-import android.widget.ListView;
 
 import java.util.ArrayList;
 
@@ -34,7 +31,7 @@ public class CompletedTasks extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent intent = new Intent(CompletedTasks.this, EditTask.class);
+                Intent intent = new Intent(CompletedTasks.this, CreateEditTask.class);
                 Task currentTask = completedTasks.get(position);
 
                 Bundle b = new Bundle();

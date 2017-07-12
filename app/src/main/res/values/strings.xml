@@ -1,8 +1,13 @@
 <resources>
+    <!--Activity names-->
     <string name="app_name">Top6</string>
     <string name="action_settings">Settings</string>
     <string name="title_activity_new_task">NewTask</string>
     <string name="title_activity_edit_task">EditTask</string>
+    <string name="title_activity_completed_tasks">CompletedTasks</string>
+    <string name="title_activity_all_tasks">AllTasks</string>
+    <string name="all_tasks">All Tasks</string>
+    <string name="completed_tasks">Completed Tasks</string>
 
     <!--Starting messages-->
     <string name="starting_message">Here are your Top 6 tasks for today!</string>
@@ -25,13 +30,11 @@
     <string name="task_completed">Task completed!</string>
     <string name="task_incomplete">Task incomplete</string>
     <string name="task_deleted">Task deleted</string>
-    <string name="title_activity_completed_tasks">CompletedTasks</string>
+
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
-    <string name="all_tasks">All Tasks</string>
-    <string name="completed_tasks">Completed Tasks</string>
-    <string name="title_activity_all_tasks">AllTasks</string>
+
     <string name="completed_cleanup">All completed tasks archived</string>
     <string name="undo">Undo</string>
     <string name="title_activity_settings">Settings</string>
@@ -112,5 +115,6 @@
     <string name="importance">Importance</string>
     <string name="high">high</string>
     <string name="low">low</string>
+    <string name="med">med</string>
 
 </resources>

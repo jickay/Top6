@@ -1,12 +1,10 @@
 package com.example.jickay.top6.fragment;
 
 import android.app.Fragment;
-import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.RequiresApi;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -15,7 +13,6 @@ import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.example.jickay.top6.EditTask;
 import com.example.jickay.top6.MainActivity;
 import com.example.jickay.top6.R;
 import com.example.jickay.top6.Task;

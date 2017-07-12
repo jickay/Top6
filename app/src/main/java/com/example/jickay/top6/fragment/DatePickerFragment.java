@@ -1,11 +1,14 @@
-package com.example.jickay.top6;
+package com.example.jickay.top6.fragment;
 
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.widget.DatePicker;
 import android.widget.EditText;
+
+import com.example.jickay.top6.R;
 
 import java.util.Calendar;
 
@@ -15,12 +18,18 @@ import java.util.Calendar;
 
 public class DatePickerFragment extends DialogFragment implements DatePickerDialog.OnDateSetListener
 {
+    EditText dateField;
+    EditText descField;
+
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         final Calendar c = Calendar.getInstance();
         int year = c.get(Calendar.YEAR);
         int month = c.get(Calendar.MONTH);
         int day = c.get(Calendar.DAY_OF_MONTH);
+
+        dateField = (EditText) getActivity().findViewById(R.id.date);
+        descField = (EditText)getActivity().findViewById(R.id.description);
 
         return new DatePickerDialog(getActivity(),this,year,month,day);
     }
@@ -44,10 +53,15 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
         }
         String dateString = monthString + " " + Integer.toString(day);
 
-        EditText dateField = (EditText) getActivity().findViewById(R.id.date);
         dateField.setText(dateString);
         dateField.clearFocus();
-        EditText descField = (EditText)getActivity().findViewById(R.id.description);
+
         descField.requestFocus();
+    }
+
+    @Override
+    public void onCancel(DialogInterface dialog) {
+        super.onCancel(dialog);
+        dateField.clearFocus();
     }
 }

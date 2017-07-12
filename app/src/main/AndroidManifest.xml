@@ -28,7 +28,7 @@
                 android:value="com.example.jickay.top6.MainActivity" />
         </activity>
         <activity
-            android:name=".EditTask"
+            android:name=".CreateEditTask"
             android:label="@string/title_activity_edit_task"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity

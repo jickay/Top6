@@ -11,10 +11,10 @@
     <color name="progressBarForeground">#000000</color>
 
     <!--Importance colors-->
-    <color name="importance1">#b0e500</color>
+    <color name="importance1">#5194ff</color>
     <color name="importance2">#dbef00</color>
-    <color name="importance3">#f7f300</color>
+    <color name="importance3">#a851ff</color>
     <color name="importance4">#ff7f00</color>
-    <color name="importance5">#ff581c</color>
+    <color name="importance5">#ff425b</color>
 
 </resources>

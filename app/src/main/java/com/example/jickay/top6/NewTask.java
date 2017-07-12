@@ -13,7 +13,13 @@ import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
+import com.example.jickay.top6.fragment.DatePickerFragment;
+
+import java.util.Calendar;
+
 public class NewTask extends AppCompatActivity {
+
+    int LEADING_DAYS = 10;
 
     EditText dateField;
     int importanceValue = -1;
@@ -36,7 +42,8 @@ public class NewTask extends AppCompatActivity {
         save.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Bundle b = saveTask(title,date,desc);
+                int urgency = getProgress(Integer.parseInt(date.getText().toString().split(" ")[1]));
+                Bundle b = saveTask(title,date,desc,urgency);
 
                 Intent intent = new Intent();
                 intent.putExtra("NewTask", b);
@@ -75,13 +82,15 @@ public class NewTask extends AppCompatActivity {
 
     protected Bundle saveTask(EditText title,
                               EditText date,
-                              EditText desc) {
+                              EditText desc,
+                              int urgency) {
         Bundle b = new Bundle();
 
         b.putString("title",title.getText().toString());
         b.putString("date",date.getText().toString());
         b.putString("description",desc.getText().toString());
         b.putInt("importance",importanceValue);
+        b.putInt("urgency",urgency);
 
         return b;
     }
@@ -121,6 +130,31 @@ public class NewTask extends AppCompatActivity {
         }
 
         return value;
+    }
+
+    private int getProgress(int taskDay) {
+        //Calculate value for progress bar
+        final Calendar c = Calendar.getInstance();
+        int currentDay = c.get(Calendar.DAY_OF_MONTH);
+        int daysInMonth = c.getActualMaximum(Calendar.DAY_OF_MONTH);
+
+        int difference;
+        if (taskDay >= currentDay) {
+            difference = taskDay - currentDay;
+        } else {
+            int remainingDays = daysInMonth - currentDay;
+            difference = taskDay + remainingDays;
+        }
+
+        int daysRemaining = LEADING_DAYS-difference;
+        int progressValue = 0;
+
+        //Set progress bar length
+        if (difference <= LEADING_DAYS) {
+            progressValue = 100/LEADING_DAYS * daysRemaining;
+        }
+
+        return progressValue;
     }
 
 }
