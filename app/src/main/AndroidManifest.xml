@@ -61,6 +61,11 @@
             android:name=".Navigation"
             android:label="@string/title_activity_navigation"
             android:theme="@style/AppTheme.NoActionBar"></activity>
+
+        <provider
+            android:authorities="com.example.jickay.top6.provider.TaskProvider"
+            android:name=".provider.TaskProvider"
+            android:exported="false" />
     </application>
 
 </manifest>
