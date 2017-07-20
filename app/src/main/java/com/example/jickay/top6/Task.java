@@ -6,13 +6,18 @@ package com.example.jickay.top6;
 
 public class Task {
 
+    private long _id;
+
     private String title;
-    private String date;
+    private String date = "Jan 1";
     private String description;
-    private int importance;
-    private int urgency;
+    private int importance = -1;
 
     private boolean completion;
+
+    public Task(long id) {
+        _id = id;
+    }
 
     public Task(String newTitle, String newDate, String newDescription, int newImportance) {
         title = newTitle;
@@ -21,25 +26,15 @@ public class Task {
         importance = newImportance;
     }
 
-    public Task(String newTitle, String newDate, String newDescription, int newImportance, int newUrgency) {
-        title = newTitle;
-        date = newDate;
-        description = newDescription;
-        importance = newImportance;
-        urgency = newUrgency;
-    }
-
     public String getTitle() { return title; }
     public String getDate() { return date; }
     public String getDescription() { return description; }
     public int getImportance() { return importance; }
-    public int getUrgency() { return urgency; }
     public boolean getCompletion() { return completion; }
 
     public void setTitle(String title) { this.title = title; }
     public void setDate(String date) { this.date = date; }
     public void setDescription(String desc) { this.description = desc; }
     public void setImportance (int importance) { this.importance = importance; }
-    public void setUrgency (int urgency) { this.urgency = urgency; }
     public void setCompletion(boolean completion) { this.completion = completion; }
 }

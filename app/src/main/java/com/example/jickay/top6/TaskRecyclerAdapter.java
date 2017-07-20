@@ -3,17 +3,20 @@ package com.example.jickay.top6;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
+import android.database.Cursor;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import com.example.jickay.top6.provider.TaskProvider;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -24,15 +27,17 @@ import java.util.Calendar;
 
 public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapter.ViewHolder>
 {
+    private static int LEADING_DAYS = 10;
+
     private Context context;
-    private ArrayList<Task> tasks;
+    private Cursor c;
+    private int currentId;
 
     private ViewGroup parent;
 
-    public TaskRecyclerAdapter(Context c, ArrayList<Task> t) {
+    public TaskRecyclerAdapter(Context c) {
         context = c;
-        tasks = t;
-    };
+    }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         RelativeLayout cardView;
@@ -67,27 +72,37 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
 
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, int i) {
-        Task thisTask = tasks.get(i);
         String taskPos = Integer.toString(i+1);
+        c.moveToPosition(i);
 
-        viewHolder.task_title.setText(thisTask.getTitle());
-        viewHolder.task_date.setText(thisTask.getDate());
+        currentId = c.getInt(c.getColumnIndex(TaskProvider.COLUMN_TASKID));
+        String title = c.getString(c.getColumnIndex(TaskProvider.COLUMN_TITLE));
+        String date = c.getString(c.getColumnIndex(TaskProvider.COLUMN_DATE));
+        String description = c.getString(c.getColumnIndex(TaskProvider.COLUMN_DESCRIPTION));
+        int importance = c.getInt(c.getColumnIndex(TaskProvider.COLUMN_IMPORTANCE));
+
+        Log.i("Database","Pos: "+(i+1)+" Loading task: "+currentId+","+title+","+date+","+description+","+importance);
+
+        // Set text for views
+        viewHolder.task_title.setText(title);
+        viewHolder.task_date.setText(date);
         viewHolder.task_num.setText(taskPos);
-        viewHolder.task_desc.setText(thisTask.getDescription());
+        viewHolder.task_desc.setText(description);
 
-        viewHolder.task_num.setBackgroundColor(ContextCompat.getColor(context,getImportanceColor(i)));
-        viewHolder.task_date.setBackgroundColor(ContextCompat.getColor(context,getImportanceColor(i)));
+        viewHolder.task_num.setBackgroundColor(ContextCompat.getColor(context,getImportanceColor(importance)));
+        viewHolder.task_date.setBackgroundColor(ContextCompat.getColor(context,getImportanceColor(importance)));
 
-        viewHolder.bar.setProgress(thisTask.getUrgency());
+        viewHolder.bar.setProgress(getUrgency(date));
 
-        setCompletionListener(parent,viewHolder,viewHolder.task_num,thisTask,taskPos,getImportanceColor(i));
+        setCompletionListener(parent,viewHolder,viewHolder.task_num,taskPos,getImportanceColor(i));
 
         editCardListener(viewHolder.fab,i);
     }
 
     @Override
     public int getItemCount() {
-        return MainActivity.getIncompleteTasks().size();
+        int count = c!=null ? c.getCount() : 0;
+        return count;
     }
 
     private void editCardListener(final FloatingActionButton fab,
@@ -96,25 +111,20 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                c.moveToPosition(i);
+                currentId = c.getInt(c.getColumnIndex(TaskProvider.COLUMN_TASKID));
                 // Create intent
                 Intent intent = new Intent(context,CreateEditTask.class);
                 intent.putExtra("Intent","edit");
-                // Pull task data
-                Task task = tasks.get(i);
-                Bundle b = new Bundle();
-                b.putInt("num",i);
-                b.putString("title", task.getTitle());
-                b.putString("date", task.getDate());
-                b.putString("desc", task.getDescription());
-                intent.putExtra("taskData", b);
+                // Get ID from database
+                intent.putExtra("ID",currentId);
                 // Start activity
                 ((Activity)fab.getContext()).startActivityForResult(intent, 1);
             }
         });
     }
 
-    private int getImportanceColor(int i) {
-        int importance = tasks.get(i).getImportance();
+    private int getImportanceColor(int importance) {
         int color = -1;
         switch (importance) {
             // No value selected
@@ -129,10 +139,38 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
         return color;
     }
 
+    public static int getUrgency(String date) {
+        int progressValue = 0;
+
+        if (!date.isEmpty()) {
+            int taskDay = Integer.parseInt(date.split(" ")[1]);
+            //Calculate value for progress bar
+            Calendar c = Calendar.getInstance();
+            int currentDay = c.get(Calendar.DAY_OF_MONTH);
+            int daysInMonth = c.getActualMaximum(Calendar.DAY_OF_MONTH);
+
+            int difference;
+            if (taskDay >= currentDay) {
+                difference = taskDay - currentDay;
+            } else {
+                int remainingDays = daysInMonth - currentDay;
+                difference = taskDay + remainingDays;
+            }
+
+            int daysRemaining = LEADING_DAYS - difference;
+
+            //Set progress bar length
+            if (difference <= LEADING_DAYS) {
+                progressValue = 100 / LEADING_DAYS * daysRemaining;
+            }
+        }
+
+        return progressValue;
+    }
+
     private void setCompletionListener(final ViewGroup parent,
                                        final ViewHolder viewHolder,
                                        final TextView textView,
-                                       final Task task,
                                        final String taskPos,
                                        final int color) {
         //Toggle completion when number is clicked
@@ -141,15 +179,15 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
             public void onClick(View v) {
                 if (textView.getText() != "\u2714") {
                     textView.setText("\u2714");
-                    task.setCompletion(true);
+//                    task.setCompletion(true);
 
                     viewHolder.task_num.setBackgroundColor(ContextCompat.getColor(context,R.color.colorAccent));
                     viewHolder.task_date.setBackgroundColor(ContextCompat.getColor(context,R.color.colorAccent));
 
-                    completeSnackbar(parent,viewHolder,task,textView,taskPos,color);
+                    completeSnackbar(parent,viewHolder,textView,taskPos,color);
                 } else {
                     textView.setText(taskPos);
-                    task.setCompletion(false);
+//                    task.setCompletion(false);
 
                     viewHolder.task_num.setBackgroundColor(ContextCompat.getColor(context,color));
                     viewHolder.task_date.setBackgroundColor(ContextCompat.getColor(context,color));
@@ -162,13 +200,13 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
 
     private void completeSnackbar(final ViewGroup parent,
                                   final ViewHolder viewHolder,
-                                  final Task task, final TextView taskNum,
+                                  final TextView taskNum,
                                   final String taskPos, final int color) {
         Snackbar mySnackbar = Snackbar.make(parent, R.string.task_completed, Snackbar.LENGTH_LONG)
                 .setAction(R.string.undo, new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        task.setCompletion(false);
+//                        task.setCompletion(false);
                         taskNum.setText(taskPos);
                         viewHolder.task_num.setBackgroundColor(ContextCompat.getColor(context,color));
                         viewHolder.task_date.setBackgroundColor(ContextCompat.getColor(context,color));
@@ -176,6 +214,12 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
                     }
                 });
         mySnackbar.show();
+    }
+
+    public void swapCursor(Cursor cursor) {
+        c = cursor;
+        c.moveToFirst();
+        notifyDataSetChanged();
     }
 
 }

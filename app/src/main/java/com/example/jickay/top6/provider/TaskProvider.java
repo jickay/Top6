@@ -1,4 +1,4 @@
-package com.example.jickay.top6;
+package com.example.jickay.top6.provider;
 
 import android.content.ContentProvider;
 import android.content.ContentResolver;
@@ -12,12 +12,17 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
+import android.widget.Toast;
 
 /**
  * Created by ViJack on 7/14/2017.
  */
 
 public class TaskProvider extends ContentProvider {
+
+    SQLiteDatabase db;
+
     // Database columns
     public static final String COLUMN_TASKID = "_id";
     public static final String COLUMN_TITLE = "title";
@@ -42,8 +47,6 @@ public class TaskProvider extends ContentProvider {
     private static final int ITEM_TASK = 1;
     private static final UriMatcher URI_MATCHER = buildUriMatcher();
 
-    // Database itself
-    SQLiteDatabase db;
 
     @Override
     public boolean onCreate() {
@@ -97,12 +100,17 @@ public class TaskProvider extends ContentProvider {
     @Nullable
     @Override
     public Uri insert(@NonNull Uri uri, @Nullable ContentValues contentValues) {
-        if (contentValues.containsKey(COLUMN_TASKID)) throw new UnsupportedOperationException();
-
         long id = db.insertOrThrow(DATABASE_TABLE, null, contentValues);
-        getContext().getContentResolver().notifyChange(uri, null);
+        Log.i("ContentValues",contentValues.getAsString("title"));
+        Log.i("ContentValues",contentValues.getAsString("date"));
+        Log.i("Database","Insert attempted");
 
-        return ContentUris.withAppendedId(uri, id);
+        if (id > 0) {
+            getContext().getContentResolver().notifyChange(uri, null);
+            return ContentUris.withAppendedId(uri, id);
+        }
+
+        throw new UnsupportedOperationException();
     }
 
     @Override

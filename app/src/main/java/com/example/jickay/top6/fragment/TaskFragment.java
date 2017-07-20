@@ -1,10 +1,13 @@
 package com.example.jickay.top6.fragment;
 
 import android.app.Fragment;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.RequiresApi;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.CursorLoader;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -29,6 +32,7 @@ public class TaskFragment extends Fragment {
     RecyclerView recView;
     TaskRecyclerAdapter adapter;
     ArrayList<Task> tasks;
+    Cursor cursor;
     TextView empty;
     RelativeLayout background;
 
@@ -37,7 +41,7 @@ public class TaskFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        adapter = new TaskRecyclerAdapter(getActivity(),MainActivity.getIncompleteTasks());
+        adapter = new TaskRecyclerAdapter(getActivity());
         tasks = MainActivity.getIncompleteTasks();
     }
 
@@ -58,10 +62,18 @@ public class TaskFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        if (tasks.isEmpty()) {
+        // Load new cursor to refresh view
+        Uri uri = Uri.parse("content://com.example.jickay.top6.provider.TaskProvider/task/");
+        cursor = new CursorLoader(getActivity(),uri,null,null,null,null).loadInBackground();
+        cursor.moveToFirst();
+        adapter.swapCursor(cursor);
+
+        // Show starting instructions if no tasks
+        if (!cursor.moveToFirst()) {
             recView.setVisibility(View.GONE);
             empty.setVisibility(View.VISIBLE);
             background.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.colorPrimaryMed));
+        // Show normal list of tasks in recycler view
         } else {
             recView.setVisibility(View.VISIBLE);
             empty.setVisibility(View.GONE);

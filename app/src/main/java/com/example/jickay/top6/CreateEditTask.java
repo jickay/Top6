@@ -3,19 +3,21 @@ package com.example.jickay.top6;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.DialogFragment;
+import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.CursorLoader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.text.Editable;
-import android.text.InputFilter;
-import android.text.Spanned;
-import android.text.TextWatcher;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -24,6 +26,7 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
 import com.example.jickay.top6.fragment.DatePickerFragment;
+import com.example.jickay.top6.provider.TaskProvider;
 
 import java.util.Calendar;
 
@@ -32,16 +35,22 @@ public class CreateEditTask extends AppCompatActivity {
 
     int LEADING_DAYS = 10;
 
-    EditText title;
-    EditText date;
-    EditText desc;
-    EditText dateField;
+    private Cursor c;
 
-    RadioGroup importance;
-    int importanceValue = -1;
+    private EditText title;
+    private EditText date;
+    private EditText desc;
+    private EditText dateField;
 
-    FloatingActionButton save;
-    FloatingActionButton cancelDelete;
+    private String titleString;
+    private String dateString;
+    private String descString;
+
+    private RadioGroup importance;
+    private int importanceValue = -1;
+
+    private FloatingActionButton save;
+    private FloatingActionButton cancelDelete;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,10 +121,10 @@ public class CreateEditTask extends AppCompatActivity {
                 hideKeyboard();
 
                 if (inputValid()) {
-                    Bundle b = saveNewTask(title, date, desc);
+                    long id = saveNewTask();
 
                     Intent intent = new Intent();
-                    intent.putExtra("NewTask", b);
+                    intent.putExtra("ID",id);
                     setResult(Activity.RESULT_OK, intent);
                     finish();
                 }
@@ -139,9 +148,24 @@ public class CreateEditTask extends AppCompatActivity {
         cancelDelete.setImageDrawable(ContextCompat.getDrawable(this, android.R.drawable.ic_menu_delete));
 
         // Get info from Task object to fill EditTexts
-        final Bundle b = getIntent().getBundleExtra("taskData");
-        final Task currentTask = MainActivity.getIncompleteTasks().get(b.getInt("num"));
-        fillTask(currentTask, title, date, desc, importance);
+        final int id = getIntent().getIntExtra("ID",0);
+        fillTask(id);
+
+        // Saving existing task edits
+        save.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (intent.matches("edit")) {
+                    // Save edits in Task object
+                    saveTaskEdit(id);
+                    // Pass result back to MainActivity
+                    Intent intent = new Intent();
+                    intent.putExtra("Action", "edit");
+                    setResult(Activity.RESULT_OK, intent);
+                    finish();
+                }
+            }
+        });
 
         // Delete existing tasks
         cancelDelete.setOnClickListener(new View.OnClickListener() {
@@ -150,39 +174,23 @@ public class CreateEditTask extends AppCompatActivity {
                 // Popup dialog to confirm cancellation of task
                 new AlertDialog.Builder(CreateEditTask.this)
                         .setTitle(R.string.delete_question)
-                        .setMessage(currentTask.getTitle())
+                        .setMessage(title.getText().toString())
                         .setCancelable(true)
                         .setNegativeButton(android.R.string.cancel, null)
                         .setPositiveButton(R.string.delete,
                                 new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface di, int i) {
-                                        int taskPos = deleteTask(currentTask);
+                                        deleteTask(id);
 
                                         Intent intent = new Intent();
                                         intent.putExtra("Action", "delete");
-                                        intent.putExtra("UndoPos", taskPos);
+                                        intent.putExtra("UndoPos", id);
                                         setResult(Activity.RESULT_OK, intent);
                                         finish();
                                     }
                                 })
                         .show();
-            }
-        });
-
-        // Saving existing task edits
-        save.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (intent.matches("edit")) {
-                    // Save edits in Task object
-                    saveTaskEdit(currentTask, title, date, desc);
-                    // Pass result back to MainActivity
-                    Intent intent = new Intent();
-                    intent.putExtra("Action", "edit");
-                    setResult(Activity.RESULT_OK, intent);
-                    finish();
-                }
             }
         });
     }
@@ -201,49 +209,64 @@ public class CreateEditTask extends AppCompatActivity {
         return isValid;
     }
 
-    private Bundle saveNewTask(EditText title,
-                              EditText date,
-                              EditText desc) {
-        Bundle b = new Bundle();
+    private long saveNewTask() {
+        // Get text from EditTexts at save
+        titleString = title.getText().toString();
+        dateString = date.getText().toString();
+        descString = desc.getText().toString();
 
-        b.putString("title",title.getText().toString());
-        b.putString("date",date.getText().toString());
-        b.putString("description",desc.getText().toString());
-        b.putInt("importance",importanceValue);
+        // Store values to insert
+        ContentValues values = new ContentValues();
+        values.put(TaskProvider.COLUMN_TITLE, titleString);
+        values.put(TaskProvider.COLUMN_DATE, dateString);
+        values.put(TaskProvider.COLUMN_DESCRIPTION, descString);
+        values.put(TaskProvider.COLUMN_IMPORTANCE, importanceValue);
 
-        return b;
+        // Insert new task values into database
+        Uri uri = getContentResolver().insert(TaskProvider.CONTENT_URI, values);
+        long id = ContentUris.parseId(uri);
+        Log.i("New task","New task inserted into db; id="+id);
+
+        return id;
     }
 
-    private void fillTask(Task currentTask,
-                            EditText title,
-                            EditText date,
-                            EditText desc,
-                            RadioGroup importance) {
-        title.setText(currentTask.getTitle());
-        date.setText(currentTask.getDate());
-        desc.setText(currentTask.getDescription());
-        setCheckedRadio(currentTask,importance);
+    private void fillTask(int id) {
+        Uri uri = ContentUris.withAppendedId(TaskProvider.CONTENT_URI,id);
+        c = new CursorLoader(this,uri,null,null,null,null).loadInBackground();
+        Log.i("FillTask","Cursor ID is "+id);
+
+        title.setText(c.getString(c.getColumnIndex(TaskProvider.COLUMN_TITLE)));
+        date.setText(c.getString(c.getColumnIndex(TaskProvider.COLUMN_DATE)));
+        desc.setText(c.getString(c.getColumnIndex(TaskProvider.COLUMN_DESCRIPTION)));
+        setCheckedRadio(importance,c.getInt(c.getColumnIndex(TaskProvider.COLUMN_IMPORTANCE)));
     }
 
-    private void saveTaskEdit(Task currentTask,
-                                EditText title,
-                                EditText date,
-                                EditText desc) {
-        currentTask.setTitle(title.getText().toString());
-        currentTask.setDate(date.getText().toString());
-        currentTask.setDescription(desc.getText().toString());
-        currentTask.setImportance(importanceValue);
-        MainActivity.getUrgency(currentTask);
+    private void saveTaskEdit(int id) {
+        // Get text from EditTexts at save
+        titleString = title.getText().toString();
+        dateString = date.getText().toString();
+        descString = desc.getText().toString();
+
+        // Store values to insert
+        ContentValues values = new ContentValues();
+        values.put(TaskProvider.COLUMN_TITLE, titleString);
+        values.put(TaskProvider.COLUMN_DATE, dateString);
+        values.put(TaskProvider.COLUMN_DESCRIPTION, descString);
+        values.put(TaskProvider.COLUMN_IMPORTANCE, importanceValue);
+
+        // Update row in database
+        Uri uri = ContentUris.withAppendedId(TaskProvider.CONTENT_URI,id);
+        int count = getContentResolver().update(uri,values,null,null);
+        if (count != 1) {
+            throw new IllegalStateException("Unable to update id "+id);
+        }
     }
 
-    private int deleteTask(Task currentTask) {
-        // Get index of currentTask
-        int taskPos = MainActivity.getIncompleteTasks().indexOf(currentTask);
-        // Move to deletedTasks arraylist if deletion confirmed
-        MainActivity.getIncompleteTasks().remove(currentTask);
-        MainActivity.getDeletedTasks().add(currentTask);
-
-        return taskPos;
+    private void deleteTask(int id) {
+        // Delete row from database
+        Uri uri = ContentUris.withAppendedId(TaskProvider.CONTENT_URI,id);
+        int count = getContentResolver().delete(uri,null,null);
+        Log.i("DeleteTask","Entry deleted: ID "+id);
     }
 
     private void showDatePickerDialog(View v, EditText field) {
@@ -287,8 +310,8 @@ public class CreateEditTask extends AppCompatActivity {
         return value;
     }
 
-    private void setCheckedRadio(Task currentTask, RadioGroup radioGroup) {
-        switch (currentTask.getImportance()) {
+    private void setCheckedRadio(RadioGroup radioGroup,int importance) {
+        switch (importance) {
             case 1: ((RadioButton)radioGroup.findViewById(R.id.importance1)).setChecked(true);
                 importanceValue = 1; break;
             case 2: ((RadioButton)radioGroup.findViewById(R.id.importance2)).setChecked(true);
@@ -345,5 +368,6 @@ public class CreateEditTask extends AppCompatActivity {
             }
         });
     }
+
 
 }
