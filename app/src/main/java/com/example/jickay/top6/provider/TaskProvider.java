@@ -29,6 +29,7 @@ public class TaskProvider extends ContentProvider {
     public static final String COLUMN_DATE = "date";
     public static final String COLUMN_DESCRIPTION = "description";
     public static final String COLUMN_IMPORTANCE = "importance";
+    public static final String COLUMN_COMPLETION = "completion";
 
     // Database constants
     public static final int DATABASE_VERSION = 1;
@@ -61,7 +62,8 @@ public class TaskProvider extends ContentProvider {
                 COLUMN_TITLE + " text not null, " +
                 COLUMN_DATE + " text not null, " +
                 COLUMN_DESCRIPTION + " text not null, " +
-                COLUMN_IMPORTANCE + " integer not null);";
+                COLUMN_IMPORTANCE + " integer not null, " +
+                COLUMN_COMPLETION + " integer not null);";
 
         DatabaseHelper(Context context) {
             super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -154,7 +156,8 @@ public class TaskProvider extends ContentProvider {
                 COLUMN_TITLE,
                 COLUMN_DATE,
                 COLUMN_DESCRIPTION,
-                COLUMN_IMPORTANCE
+                COLUMN_IMPORTANCE,
+                COLUMN_COMPLETION
         };
 
         Cursor c;

@@ -26,6 +26,7 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
 import com.example.jickay.top6.fragment.DatePickerFragment;
+import com.example.jickay.top6.fragment.TaskFragment;
 import com.example.jickay.top6.provider.TaskProvider;
 
 import java.util.Calendar;
@@ -40,7 +41,6 @@ public class CreateEditTask extends AppCompatActivity {
     private EditText title;
     private EditText date;
     private EditText desc;
-    private EditText dateField;
 
     private String titleString;
     private String dateString;
@@ -49,12 +49,15 @@ public class CreateEditTask extends AppCompatActivity {
     private RadioGroup importance;
     private int importanceValue = -1;
 
+    private boolean completion = false;
+
     private FloatingActionButton save;
     private FloatingActionButton cancelDelete;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        TaskFragment.setFullscreenWithNavigation(this);
         setContentView(R.layout.activity_edit_task);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -63,7 +66,6 @@ public class CreateEditTask extends AppCompatActivity {
         title = (EditText) findViewById(R.id.title);
         date = (EditText) findViewById(R.id.date);
         desc = (EditText) findViewById(R.id.description);
-        dateField = (EditText) findViewById(R.id.date);
         importance = (RadioGroup) findViewById(R.id.importance_group);
 
         save = (FloatingActionButton) findViewById(R.id.save_task);
@@ -83,18 +85,15 @@ public class CreateEditTask extends AppCompatActivity {
         }
 
         // Open date picker
-        dateField.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+        date.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 if (hasFocus) {
-
-                    showDatePickerDialog(v,dateField);
+                    // Open date picking dialog
+                    showDatePickerDialog(v,date);
                 }
             }
         });
-
-        // Set character limit for title and description
-
 
         // Clear focus when hit enter
         setClearFocusOnEnter(title);
@@ -221,6 +220,7 @@ public class CreateEditTask extends AppCompatActivity {
         values.put(TaskProvider.COLUMN_DATE, dateString);
         values.put(TaskProvider.COLUMN_DESCRIPTION, descString);
         values.put(TaskProvider.COLUMN_IMPORTANCE, importanceValue);
+        values.put(TaskProvider.COLUMN_COMPLETION, 0);
 
         // Insert new task values into database
         Uri uri = getContentResolver().insert(TaskProvider.CONTENT_URI, values);
@@ -265,7 +265,7 @@ public class CreateEditTask extends AppCompatActivity {
     private void deleteTask(int id) {
         // Delete row from database
         Uri uri = ContentUris.withAppendedId(TaskProvider.CONTENT_URI,id);
-        int count = getContentResolver().delete(uri,null,null);
+        getContentResolver().delete(uri,null,null);
         Log.i("DeleteTask","Entry deleted: ID "+id);
     }
 
@@ -276,7 +276,7 @@ public class CreateEditTask extends AppCompatActivity {
 
     private int setRadioValue(View view) {
         // Is the button now checked?
-        boolean checked = false;
+        boolean checked;
         int value = -1;
 
         if (view != null) {
@@ -295,14 +295,6 @@ public class CreateEditTask extends AppCompatActivity {
                     if (checked)
                         value = 3;
                     break;
-                case R.id.importance4:
-                    if (checked)
-                        value = 4;
-                    break;
-                case R.id.importance5:
-                    if (checked)
-                        value = 5;
-                    break;
                 default: value = -1; break;
             }
         }
@@ -318,36 +310,7 @@ public class CreateEditTask extends AppCompatActivity {
                 importanceValue = 2; break;
             case 3: ((RadioButton)radioGroup.findViewById(R.id.importance3)).setChecked(true);
                 importanceValue = 3; break;
-            case 4: ((RadioButton)radioGroup.findViewById(R.id.importance4)).setChecked(true);
-                importanceValue = 4; break;
-            case 5: ((RadioButton)radioGroup.findViewById(R.id.importance5)).setChecked(true);
-                importanceValue = 5; break;
         }
-    }
-
-    private int getProgress(int taskDay) {
-        //Calculate value for progress bar
-        Calendar c = Calendar.getInstance();
-        int currentDay = c.get(Calendar.DAY_OF_MONTH);
-        int daysInMonth = c.getActualMaximum(Calendar.DAY_OF_MONTH);
-
-        int difference;
-        if (taskDay >= currentDay) {
-            difference = taskDay - currentDay;
-        } else {
-            int remainingDays = daysInMonth - currentDay;
-            difference = taskDay + remainingDays;
-        }
-
-        int daysRemaining = LEADING_DAYS-difference;
-        int progressValue = 0;
-
-        //Set progress bar length
-        if (difference <= LEADING_DAYS) {
-            progressValue = 100/LEADING_DAYS * daysRemaining;
-        }
-
-        return progressValue;
     }
 
     private void hideKeyboard() {

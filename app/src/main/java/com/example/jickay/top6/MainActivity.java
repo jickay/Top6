@@ -1,11 +1,13 @@
 package com.example.jickay.top6;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -19,6 +21,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.view.MenuItem;
+import android.view.WindowManager;
 
 import com.example.jickay.top6.provider.TaskProvider;
 
@@ -33,8 +36,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private static ArrayList<Task> completedTasks = new ArrayList<>();
     private static ArrayList<Task> deletedTasks = new ArrayList<>();
 
-    private FileWriter fileWriter;
-
     // Getter methods
     public static ArrayList<Task> getIncompleteTasks() { return incompleteTasks; }
     public static ArrayList<Task> getCompletedTasks() { return completedTasks; }
@@ -42,11 +43,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // Calculate urgency for each task
-//        for (Task task : incompleteTasks) {
-//            getUrgency(task);
-//        }
-
         // Sort tasks with priority algorithm
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigation);
@@ -156,13 +152,4 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         }
     }
-
-    private void saveTaskFile() {
-        fileWriter.onSave(this);
-    }
-
-    private void loadTaskFile() {
-        fileWriter.onLoad(this);
-    }
-
 }

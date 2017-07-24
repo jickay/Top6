@@ -27,7 +27,7 @@ public class TaskAdapter extends BaseExpandableListAdapter
     public TaskAdapter(Context c, ArrayList<Task> t) {
         context = c;
         tasks = t;
-    };
+    }
 
     @Override
     public View getChildView (int groupPosition, int childPosition,
@@ -68,7 +68,7 @@ public class TaskAdapter extends BaseExpandableListAdapter
         ProgressBar bar = (ProgressBar) convertView.findViewById(R.id.task_urgency);
 
         //Set initial text for views
-        if (task.getCompletion()) {
+        if (task.getCompletion()==1) {
             taskNum.setText("OK");
         } else {
             taskNum.setText(taskPos);
@@ -82,11 +82,11 @@ public class TaskAdapter extends BaseExpandableListAdapter
             public void onClick(View v) {
                 if (taskNum.getText() != "OK") {
                     taskNum.setText("OK");
-                    task.setCompletion(true);
+                    task.setCompletion(1);
                     completeSnackbar(parent,task,taskNum,taskPos);
                 } else {
                     taskNum.setText(taskPos);
-                    task.setCompletion(false);
+                    task.setCompletion(0);
                     Snackbar.make(parent, R.string.task_incomplete, Snackbar.LENGTH_LONG).show();
                 }
             }
@@ -113,7 +113,7 @@ public class TaskAdapter extends BaseExpandableListAdapter
             .setAction(R.string.undo, new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    task.setCompletion(false);
+                    task.setCompletion(0);
                     taskNum.setText(taskPos);
                     Snackbar.make(parent, R.string.task_incomplete, Snackbar.LENGTH_SHORT).show();
                 }

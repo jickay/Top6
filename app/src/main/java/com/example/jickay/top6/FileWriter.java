@@ -83,7 +83,7 @@ public class FileWriter {
                     + task.getDate() + ","
                     + task.getDescription() + ","
                     + Integer.toString(task.getImportance()) + ","
-                    + Boolean.toString(task.getCompletion());
+                    + Integer.toString(task.getCompletion());
             outputText.add(taskLine);
         }
     }

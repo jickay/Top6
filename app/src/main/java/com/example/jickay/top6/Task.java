@@ -13,7 +13,7 @@ public class Task {
     private String description;
     private int importance = -1;
 
-    private boolean completion;
+    private int completion;
 
     public Task(long id) {
         _id = id;
@@ -30,11 +30,11 @@ public class Task {
     public String getDate() { return date; }
     public String getDescription() { return description; }
     public int getImportance() { return importance; }
-    public boolean getCompletion() { return completion; }
+    public int getCompletion() { return completion; }
 
     public void setTitle(String title) { this.title = title; }
     public void setDate(String date) { this.date = date; }
     public void setDescription(String desc) { this.description = desc; }
     public void setImportance (int importance) { this.importance = importance; }
-    public void setCompletion(boolean completion) { this.completion = completion; }
+    public void setCompletion(int completion) { this.completion = completion; }
 }
