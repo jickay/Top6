@@ -77,47 +77,49 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
 
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, int i) {
-//        if (i <= PER_PAGE+10) {
-            String taskPos = Integer.toString(i + 1);
-            c.moveToPosition(i);
+        c.moveToPosition(i);
 
-            currentId = c.getInt(c.getColumnIndex(TaskProvider.COLUMN_TASKID));
-            String title = c.getString(c.getColumnIndex(TaskProvider.COLUMN_TITLE));
-            String date = c.getString(c.getColumnIndex(TaskProvider.COLUMN_DATE));
-            String description = c.getString(c.getColumnIndex(TaskProvider.COLUMN_DESCRIPTION));
-            int importance = c.getInt(c.getColumnIndex(TaskProvider.COLUMN_IMPORTANCE));
-            int completion = c.getInt(c.getColumnIndex(TaskProvider.COLUMN_COMPLETION));
+        currentId = c.getInt(c.getColumnIndex(TaskProvider.COLUMN_TASKID));
+        String title = c.getString(c.getColumnIndex(TaskProvider.COLUMN_TITLE));
+        String date = c.getString(c.getColumnIndex(TaskProvider.COLUMN_DATE));
+        String description = c.getString(c.getColumnIndex(TaskProvider.COLUMN_DESCRIPTION));
+        int importance = c.getInt(c.getColumnIndex(TaskProvider.COLUMN_IMPORTANCE));
+        int completion = c.getInt(c.getColumnIndex(TaskProvider.COLUMN_COMPLETION));
 
-            Log.i("Database", "Pos: " + (i + 1) + " Loading task: " + currentId + ","
-                    + title + "," + date + "," + description + "," + importance + "," + completion);
+        Log.i("Database", "Pos: " + (i + 1) + " Loading task: " + currentId + ","
+                + title + "," + date + "," + description + "," + importance + "," + completion);
 
-            // Set text for views
-            TextView textView = viewHolder.task_num;
+        // Set text for views
+        TextView textView = viewHolder.task_num;
+        String taskPos = Integer.toString(i + 1);
+        String dateString = formatDate(date);
 
-            viewHolder.task_title.setText(title);
-            viewHolder.task_date.setText(date);
-            viewHolder.task_num.setText(taskPos);
-            viewHolder.task_desc.setText(description);
+        viewHolder.task_title.setText(title);
+        viewHolder.task_date.setText(dateString);
+        viewHolder.task_num.setText(taskPos);
+        viewHolder.task_desc.setText(description);
 
-            if (completion == 1) {
-                viewHolder.task_num.setBackgroundColor(ContextCompat.getColor(context, R.color.colorAccent));
-                viewHolder.task_date.setBackgroundColor(ContextCompat.getColor(context, R.color.colorAccent));
-                viewHolder.bar.setBackgroundColor(ContextCompat.getColor(context, R.color.colorAccent));
-                textView.setText("\u2714");
-            } else {
-                viewHolder.task_num.setBackgroundColor(ContextCompat.getColor(context, getImportanceColor(importance)));
-                viewHolder.task_date.setBackgroundColor(ContextCompat.getColor(context, getImportanceColor(importance)));
-                viewHolder.bar.setBackgroundColor(ContextCompat.getColor(context, getImportanceColor(importance)));
-                textView.setText(Integer.toString(i+1));
-            }
+        if (completion == 1) {
+            viewHolder.task_num.setBackgroundColor(ContextCompat.getColor(context, R.color.colorAccent));
+            viewHolder.task_date.setBackgroundColor(ContextCompat.getColor(context, R.color.colorAccent));
+            viewHolder.bar.setBackgroundColor(ContextCompat.getColor(context, R.color.colorAccent));
+            textView.setText("\u2714");
+        } else {
+            viewHolder.task_num.setBackgroundColor(ContextCompat.getColor(context, getImportanceColor(importance)));
+            viewHolder.task_date.setBackgroundColor(ContextCompat.getColor(context, getImportanceColor(importance)));
+            viewHolder.bar.setBackgroundColor(ContextCompat.getColor(context, getImportanceColor(importance)));
+            textView.setText(Integer.toString(i+1));
+        }
 
-            int progress = getUrgency(date);
-            viewHolder.bar.setProgress(progress);
+        // Set urgency bar
+        int progress = getUrgency(dateString);
+        viewHolder.bar.setProgress(progress);
 
-            setCompletionListener(parent, viewHolder, textView, taskPos, getImportanceColor(importance), i);
+        // Set completion listener for task_num view
+        setCompletionListener(parent, viewHolder, textView, taskPos, getImportanceColor(importance), i);
 
-            editCardListener(viewHolder.fab, i);
-//        }
+        // Set button listener to edit task card
+        editCardListener(viewHolder.fab, i);
     }
 
     @Override
@@ -224,7 +226,6 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
         c = cursor;
         c.moveToFirst();
         notifyDataSetChanged();
-        notifyDataSetChanged();
     }
 
     private int getImportanceColor(int importance) {
@@ -267,6 +268,30 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
         }
 
         return progressValue;
+    }
+
+    public static String formatDate(String date) {
+
+        int month = Integer.parseInt(date.split("-")[1]);
+        String day = date.split("-")[2];
+
+        String monthString = "";
+        switch (month) {
+            case 0: monthString = "Jan"; break;
+            case 1: monthString = "Feb"; break;
+            case 2: monthString = "Mar"; break;
+            case 3: monthString = "Apr"; break;
+            case 4: monthString = "May"; break;
+            case 5: monthString = "Jun"; break;
+            case 6: monthString = "Jul"; break;
+            case 7: monthString = "Aug"; break;
+            case 8: monthString = "Sep"; break;
+            case 9: monthString = "Oct"; break;
+            case 10: monthString = "Nov"; break;
+            case 11: monthString = "Dec"; break;
+        }
+
+        return monthString + " " + day;
     }
 
 }

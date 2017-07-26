@@ -29,7 +29,9 @@ import com.example.jickay.top6.fragment.DatePickerFragment;
 import com.example.jickay.top6.fragment.TaskFragment;
 import com.example.jickay.top6.provider.TaskProvider;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 
 
 public class CreateEditTask extends AppCompatActivity {
@@ -46,13 +48,14 @@ public class CreateEditTask extends AppCompatActivity {
     private String dateString;
     private String descString;
 
+    private static String dateData;
     private RadioGroup importance;
     private int importanceValue = -1;
 
-    private boolean completion = false;
-
     private FloatingActionButton save;
     private FloatingActionButton cancelDelete;
+
+    public static void setDateData(String data) { dateData = data; }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,7 +81,6 @@ public class CreateEditTask extends AppCompatActivity {
         if (intent.matches("new")) {
             newTaskActivity();
         }
-
         // For editing existing tasks
         if (intent.matches("edit")) {
             editTaskActivity(intent);
@@ -217,7 +219,7 @@ public class CreateEditTask extends AppCompatActivity {
         // Store values to insert
         ContentValues values = new ContentValues();
         values.put(TaskProvider.COLUMN_TITLE, titleString);
-        values.put(TaskProvider.COLUMN_DATE, dateString);
+        values.put(TaskProvider.COLUMN_DATE, dateData);
         values.put(TaskProvider.COLUMN_DESCRIPTION, descString);
         values.put(TaskProvider.COLUMN_IMPORTANCE, importanceValue);
         values.put(TaskProvider.COLUMN_COMPLETION, 0);
@@ -236,7 +238,8 @@ public class CreateEditTask extends AppCompatActivity {
         Log.i("FillTask","Cursor ID is "+id);
 
         title.setText(c.getString(c.getColumnIndex(TaskProvider.COLUMN_TITLE)));
-        date.setText(c.getString(c.getColumnIndex(TaskProvider.COLUMN_DATE)));
+        date.setText(TaskRecyclerAdapter.formatDate(
+                c.getString(c.getColumnIndex(TaskProvider.COLUMN_DATE))));
         desc.setText(c.getString(c.getColumnIndex(TaskProvider.COLUMN_DESCRIPTION)));
         setCheckedRadio(importance,c.getInt(c.getColumnIndex(TaskProvider.COLUMN_IMPORTANCE)));
     }
@@ -250,7 +253,7 @@ public class CreateEditTask extends AppCompatActivity {
         // Store values to insert
         ContentValues values = new ContentValues();
         values.put(TaskProvider.COLUMN_TITLE, titleString);
-        values.put(TaskProvider.COLUMN_DATE, dateString);
+        values.put(TaskProvider.COLUMN_DATE, dateData);
         values.put(TaskProvider.COLUMN_DESCRIPTION, descString);
         values.put(TaskProvider.COLUMN_IMPORTANCE, importanceValue);
 

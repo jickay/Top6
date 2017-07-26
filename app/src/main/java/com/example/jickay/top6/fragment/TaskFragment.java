@@ -24,6 +24,7 @@ import com.example.jickay.top6.MainActivity;
 import com.example.jickay.top6.R;
 import com.example.jickay.top6.Task;
 import com.example.jickay.top6.TaskRecyclerAdapter;
+import com.example.jickay.top6.provider.TaskProvider;
 
 import java.util.ArrayList;
 
@@ -68,8 +69,9 @@ public class TaskFragment extends Fragment {
         setFullscreen(getActivity());
 
         // Load new cursor to refresh view
-        Uri uri = Uri.parse("content://com.example.jickay.top6.provider.TaskProvider/task/");
-        cursor = new CursorLoader(getActivity(),uri,null,null,null,null).loadInBackground();
+        Uri uri = TaskProvider.CONTENT_URI;
+        String sortOrder = TaskProvider.COLUMN_DATE + " ASC, " + TaskProvider.COLUMN_IMPORTANCE + " DESC";
+        cursor = new CursorLoader(getActivity(),uri,null,null,null,sortOrder).loadInBackground();
         cursor.moveToFirst();
         adapter.swapCursor(cursor);
 

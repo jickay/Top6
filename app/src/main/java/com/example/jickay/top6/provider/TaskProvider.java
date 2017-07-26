@@ -60,7 +60,7 @@ public class TaskProvider extends ContentProvider {
         static final String DATABASE_CREATE = "create table " + DATABASE_TABLE + " (" +
                 COLUMN_TASKID + " integer primary key autoincrement, " +
                 COLUMN_TITLE + " text not null, " +
-                COLUMN_DATE + " text not null, " +
+                COLUMN_DATE + " datetime not null, " +
                 COLUMN_DESCRIPTION + " text not null, " +
                 COLUMN_IMPORTANCE + " integer not null, " +
                 COLUMN_COMPLETION + " integer not null);";
@@ -150,7 +150,9 @@ public class TaskProvider extends ContentProvider {
 
     @Nullable
     @Override
-    public Cursor query(@NonNull Uri uri, @Nullable String[] strings, @Nullable String selection, @Nullable String[] selectionArgs, @Nullable String sortOrder) {
+    public Cursor query(@NonNull Uri uri, @Nullable String[] strings,
+                        @Nullable String selection, @Nullable String[] selectionArgs,
+                        @Nullable String sortOrder) {
         String[] projection = new String[] {
                 COLUMN_TASKID,
                 COLUMN_TITLE,
@@ -163,13 +165,11 @@ public class TaskProvider extends ContentProvider {
         Cursor c;
         switch (URI_MATCHER.match(uri)) {
             case LIST_TASK:
-                c = db.query(DATABASE_TABLE,
-                        projection, selection,
+                c = db.query(DATABASE_TABLE, projection, selection,
                         selectionArgs, null, null, sortOrder);
                 break;
             case ITEM_TASK:
-                c = db.query(DATABASE_TABLE,
-                        projection,
+                c = db.query(DATABASE_TABLE, projection,
                         COLUMN_TASKID + "=?",
                         new String[] {Long.toString(ContentUris.parseId(uri))},
                         null, null, null, null);

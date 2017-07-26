@@ -7,34 +7,33 @@
     android:layout_height="match_parent"
     tools:context="com.example.jickay.top6.MainActivity">
 
-    <LinearLayout
+    <fragment
+        android:id="@+id/fragment"
+        android:name="com.example.jickay.top6.fragment.TaskFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:background="@color/colorAccent">
+        tools:layout="@layout/content_main"
+        android:layout_above="@+id/appBarLayout" />
 
-        <android.support.design.widget.AppBarLayout
+    <android.support.design.widget.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/ActionBar"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginLeft="-24dp"
+        android:id="@+id/appBarLayout">
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:theme="@style/ActionBar">
+            android:layout_height="48dp"
+            android:background="?attr/colorPrimary"
+            app:contentInsetStartWithNavigation="0dp"
+            app:popupTheme="@style/AppTheme.PopupOverlay" />
 
-            <android.support.v7.widget.Toolbar
-                android:id="@+id/toolbar"
-                android:layout_width="match_parent"
-                android:layout_height="40dp"
-                android:background="?attr/colorPrimary"
-                app:popupTheme="@style/AppTheme.PopupOverlay" />
-
-        </android.support.design.widget.AppBarLayout>
-
-        <fragment
-            android:id="@+id/fragment"
-            android:name="com.example.jickay.top6.fragment.TaskFragment"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            tools:layout="@layout/content_main" />
-
-    </LinearLayout>
+    </android.support.design.widget.AppBarLayout>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/add_task_btn"
@@ -42,6 +41,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/fab_margin"
         android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
         app:fabSize="normal"
         app:srcCompat="@android:drawable/ic_menu_add" />
 

@@ -24,7 +24,7 @@
         <item name="android:textColorPrimary">@color/colorPrimaryDark</item>
         <item name="android:textColorSecondary">@color/colorPrimaryDark</item>
         <item name="colorControlNormal">@color/colorPrimaryDark</item>
-        <item name="drawerArrowStyle">@style/drawerArrowStyle</item>
+        <item name="android:layout_alignParentBottom">true</item>
     </style>
 
     <style name="drawerArrowStyle" parent="Widget.AppCompat.DrawerArrowToggle">

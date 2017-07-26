@@ -8,9 +8,11 @@ import android.os.Bundle;
 import android.widget.DatePicker;
 import android.widget.EditText;
 
+import com.example.jickay.top6.CreateEditTask;
 import com.example.jickay.top6.R;
 
 import java.util.Calendar;
+import java.util.Date;
 
 /**
  * Created by ViJack on 6/21/2017.
@@ -29,7 +31,7 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
         int day = c.get(Calendar.DAY_OF_MONTH);
 
         dateField = (EditText) getActivity().findViewById(R.id.date);
-        descField = (EditText)getActivity().findViewById(R.id.description);
+        descField = (EditText) getActivity().findViewById(R.id.description);
 
         return new DatePickerDialog(getActivity(),this,year,month,day);
     }
@@ -51,7 +53,19 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
             case 10: monthString = "Nov"; break;
             case 11: monthString = "Dec"; break;
         }
-        String dateString = monthString + " " + Integer.toString(day);
+
+        String dayString = "";
+        if (day < 10) {
+            dayString = "0" + Integer.toString(day);
+        } else {
+            dayString = Integer.toString(day);
+        }
+
+        String dateString = monthString + " " + dayString;
+
+        CreateEditTask.setDateData(Integer.toString(year) + "-" +
+                                    Integer.toString(month) + "-" +
+                                    dayString);
 
         dateField.setText(dateString);
         dateField.clearFocus();
