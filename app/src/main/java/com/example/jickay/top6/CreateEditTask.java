@@ -222,7 +222,8 @@ public class CreateEditTask extends AppCompatActivity {
         values.put(TaskProvider.COLUMN_DATE, dateData);
         values.put(TaskProvider.COLUMN_DESCRIPTION, descString);
         values.put(TaskProvider.COLUMN_IMPORTANCE, importanceValue);
-        values.put(TaskProvider.COLUMN_COMPLETION, 0);
+        values.put(TaskProvider.COLUMN_COMPLETION_TODAY, 0);
+        values.put(TaskProvider.COLUMN_COMPLETION_BEFORE, 0);
 
         // Insert new task values into database
         Uri uri = getContentResolver().insert(TaskProvider.CONTENT_URI, values);

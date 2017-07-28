@@ -25,8 +25,8 @@
             android:layout_height="match_parent"
             android:layout_marginLeft="12dp"
             android:layout_marginRight="16dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="4dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="6dp"
             card_view:cardCornerRadius="1dp"
             card_view:cardElevation="3dp">
 
@@ -61,7 +61,7 @@
                     android:layout_toStartOf="@+id/relativeLayout"
                     android:background="@color/colorAccent"
                     android:max="100"
-                    android:progressTint="@color/cardview_light_background" />
+                    android:progressTint="@color/colorPrimaryDark" />
 
                 <TextView
                     android:id="@+id/task_date"

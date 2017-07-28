@@ -29,7 +29,8 @@ public class TaskProvider extends ContentProvider {
     public static final String COLUMN_DATE = "date";
     public static final String COLUMN_DESCRIPTION = "description";
     public static final String COLUMN_IMPORTANCE = "importance";
-    public static final String COLUMN_COMPLETION = "completion";
+    public static final String COLUMN_COMPLETION_TODAY = "completion_today";
+    public static final String COLUMN_COMPLETION_BEFORE = "completion_before";
 
     // Database constants
     public static final int DATABASE_VERSION = 1;
@@ -60,10 +61,11 @@ public class TaskProvider extends ContentProvider {
         static final String DATABASE_CREATE = "create table " + DATABASE_TABLE + " (" +
                 COLUMN_TASKID + " integer primary key autoincrement, " +
                 COLUMN_TITLE + " text not null, " +
-                COLUMN_DATE + " datetime not null, " +
+                COLUMN_DATE + " text not null, " +
                 COLUMN_DESCRIPTION + " text not null, " +
                 COLUMN_IMPORTANCE + " integer not null, " +
-                COLUMN_COMPLETION + " integer not null);";
+                COLUMN_COMPLETION_TODAY + " integer not null, " +
+                COLUMN_COMPLETION_BEFORE + " integer not null);";
 
         DatabaseHelper(Context context) {
             super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -150,26 +152,27 @@ public class TaskProvider extends ContentProvider {
 
     @Nullable
     @Override
-    public Cursor query(@NonNull Uri uri, @Nullable String[] strings,
-                        @Nullable String selection, @Nullable String[] selectionArgs,
-                        @Nullable String sortOrder) {
+    public Cursor query(@NonNull Uri uri, @Nullable String[] strings, @Nullable String selection, @Nullable String[] selectionArgs, @Nullable String sortOrder) {
         String[] projection = new String[] {
                 COLUMN_TASKID,
                 COLUMN_TITLE,
                 COLUMN_DATE,
                 COLUMN_DESCRIPTION,
                 COLUMN_IMPORTANCE,
-                COLUMN_COMPLETION
+                COLUMN_COMPLETION_TODAY,
+                COLUMN_COMPLETION_BEFORE
         };
 
         Cursor c;
         switch (URI_MATCHER.match(uri)) {
             case LIST_TASK:
-                c = db.query(DATABASE_TABLE, projection, selection,
+                c = db.query(DATABASE_TABLE,
+                        projection, selection,
                         selectionArgs, null, null, sortOrder);
                 break;
             case ITEM_TASK:
-                c = db.query(DATABASE_TABLE, projection,
+                c = db.query(DATABASE_TABLE,
+                        projection,
                         COLUMN_TASKID + "=?",
                         new String[] {Long.toString(ContentUris.parseId(uri))},
                         null, null, null, null);

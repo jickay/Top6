@@ -3,6 +3,9 @@ package com.example.jickay.top6.fragment;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.ContentUris;
+import android.content.ContentValues;
+import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
@@ -68,10 +71,17 @@ public class TaskFragment extends Fragment {
         super.onResume();
         setFullscreen(getActivity());
 
-        // Load new cursor to refresh view
+        // Count number complete today
+        int doneToday = getCompletedToday(getContext());
+        MainActivity.setDoneToday(doneToday);
+        MainActivity.updateDoneToday();
+
+        // Load new cursor to refresh view; Does not display any rows completed before
         Uri uri = TaskProvider.CONTENT_URI;
+        String where = "CAST(" + TaskProvider.COLUMN_COMPLETION_BEFORE + " as TEXT) =?";
+        String[] filter = new String[] {"0"};
         String sortOrder = TaskProvider.COLUMN_DATE + " ASC, " + TaskProvider.COLUMN_IMPORTANCE + " DESC";
-        cursor = new CursorLoader(getActivity(),uri,null,null,null,sortOrder).loadInBackground();
+        cursor = new CursorLoader(getActivity(),uri,null,where,filter,sortOrder).loadInBackground();
         cursor.moveToFirst();
         adapter.swapCursor(cursor);
 
@@ -125,5 +135,24 @@ public class TaskFragment extends Fragment {
                     View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                             | View.SYSTEM_UI_FLAG_FULLSCREEN);
         }
+    }
+
+    public int getCompletedToday(Context context) {
+        // Get all tasks complete today
+        Uri allCompleted = TaskProvider.CONTENT_URI;
+        String where = "CAST(" + TaskProvider.COLUMN_COMPLETION_TODAY + " as TEXT) =?";
+        String[] filter = new String[]{"1"};
+        String sortOrder = TaskProvider.COLUMN_DATE + " ASC";
+        Cursor cursor = new CursorLoader(context, allCompleted, null, where, filter, sortOrder).loadInBackground();
+
+        // Count number in list
+        int count = 0;
+        if (cursor.moveToFirst()) {
+            do {
+                count++;
+            } while (cursor.moveToNext());
+        }
+
+        return count;
     }
 }

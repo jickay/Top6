@@ -1,41 +1,57 @@
 package com.example.jickay.top6;
 
 import android.app.Activity;
+import android.content.ContentUris;
+import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
-import android.support.v4.view.GestureDetectorCompat;
+import android.support.v4.content.CursorLoader;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.GestureDetector;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.MenuItem;
+import android.widget.TextView;
+
+import com.example.jickay.top6.provider.TaskProvider;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
 
     private int LEADING_DAYS = 10;
 
-    private GestureDetectorCompat gesture;
-    private RecyclerView rv;
+    private static int doneToday = 0;
+
+    private SharedPreferences sharedPref;
+    private SharedPreferences.Editor prefEditor;
+
+    private static TextView done_today;
+    private TextView done_yesterday;
 
     private static ArrayList<Task> incompleteTasks = new ArrayList<>();
     private static ArrayList<Task> completedTasks = new ArrayList<>();
     private static ArrayList<Task> deletedTasks = new ArrayList<>();
 
     // Getter methods
+    public static int getDoneToday() { return doneToday; }
     public static ArrayList<Task> getIncompleteTasks() { return incompleteTasks; }
     public static ArrayList<Task> getCompletedTasks() { return completedTasks; }
     public static ArrayList<Task> getDeletedTasks() { return deletedTasks; }
+
+    // Setter methods
+    public static void setDoneToday(int number) { doneToday = number; }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,7 +59,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigation);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+
+        // Preferences editor
+        sharedPref = getPreferences(Context.MODE_PRIVATE);
+        prefEditor = sharedPref.edit();
 
         // Add task button
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.add_task_btn);
@@ -57,18 +76,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         });
 
-        // Set touch listener for task list
-        gesture = new GestureDetectorCompat(this, new MyGestureListener());
-
-        rv = (RecyclerView)findViewById(R.id.recycler);
-        rv.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                gesture.onTouchEvent(event);
-                return false;
-            }
-        });
-
         // Navigation drawer
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -78,19 +85,54 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        // Set completion count for today and yesterday
+        done_today = (TextView) findViewById(R.id.done_today);
+        updateDoneToday();
+
+        done_yesterday = (TextView) findViewById(R.id.done_yesterday);
+
         // Starting message
         Snackbar.make(findViewById(R.id.main_activity), R.string.notfull_message, Snackbar.LENGTH_LONG).show();
     }
 
     @Override
-    public boolean onTouchEvent (MotionEvent event){
-        gesture.onTouchEvent(event);
-        return super.onTouchEvent(event);
+    protected void onPause() {
+        super.onPause();
+
+        // Store last day used
+        Calendar c = Calendar.getInstance();
+        int lastDay = c.get(Calendar.DAY_OF_YEAR);
+
+        prefEditor.putInt(getString(R.string.date_yesterday), lastDay);
+        prefEditor.commit();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // Show number done yesterday
+        done_yesterday.setText(sharedPref.getInt(getString(R.string.done_yesterday),0));
+
+        // Get today's date; Clear complete if new day
+        Calendar c = Calendar.getInstance();
+        int thisDay = c.get(Calendar.DAY_OF_YEAR);
+        int lastDay = sharedPref.getInt(getString(R.string.date_yesterday), 0);
+        Log.i("NewDayDetection","ThisDay: " + Integer.toString(thisDay) + ", LastDay: " + Integer.toString(lastDay));
+
+        if (thisDay > lastDay) {
+            Log.i("NewDayDetection",Integer.toString(thisDay) + " is later than " + Integer.toString(lastDay));
+            // Store number done yesterday
+            prefEditor.putInt(getString(R.string.done_yesterday),doneToday);
+            prefEditor.commit();
+            // Clear complete today to not show on recycler
+            clearCompleted();
+        }
     }
 
     /*
-            Navigation drawer menu methods
-         */
+                    Navigation drawer menu methods
+                 */
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -160,54 +202,34 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
+    private void clearCompleted() {
+        if (TaskRecyclerAdapter.getClearCompleted()) {
+            // Get all tasks complete today
+            Uri allCompleted = TaskProvider.CONTENT_URI;
+            String where = "CAST(" + TaskProvider.COLUMN_COMPLETION_TODAY + " as TEXT) =?";
+            String[] filter = new String[]{"1"};
+            String sortOrder = TaskProvider.COLUMN_DATE + " ASC";
+            Cursor cursor = new CursorLoader(this, allCompleted, null, where, filter, sortOrder).loadInBackground();
 
-    class MyGestureListener implements GestureDetector.OnGestureListener {
-        private static final String DEBUG_TAG = "Gestures";
-
-        @Override
-        public boolean onDown(MotionEvent event) {
-            return true;
+            // Change value as complete before to prevent loading on main activity
+            if (cursor.moveToFirst()) {
+                do {
+                    long id = cursor.getLong(cursor.getColumnIndex(TaskProvider.COLUMN_TASKID));
+                    Uri eachCompleted = ContentUris.withAppendedId(TaskProvider.CONTENT_URI, id);
+                    ContentValues values = new ContentValues();
+                    values.put(TaskProvider.COLUMN_COMPLETION_TODAY, 0);
+                    values.put(TaskProvider.COLUMN_COMPLETION_BEFORE, 1);
+                    getContentResolver().update(eachCompleted, values, null, null);
+                } while (cursor.moveToNext());
+            }
         }
+    }
 
-        @Override
-        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-//            if (distanceY > 0) {
-//                Log.i("Scroll",Float.toString(e1.getY()));
-//                rv.smoothScrollToPosition(Float.floatToIntBits(e1.getY())+200);
-//            } else {
-//                Log.i("Scroll",Float.toString(e1.getY()));
-//                rv.smoothScrollToPosition(Float.floatToIntBits(e1.getY())-200);
-//            }
-            return false;
-        }
-
-        @Override
-        public boolean onFling(MotionEvent event1, MotionEvent event2,
-                               float velocityX, float velocityY) {
-//            if (velocityY < 0) {
-//                Log.i("Scroll",Float.toString(velocityY)+" "+rv.computeVerticalScrollOffset());
-//                rv.smoothScrollToPosition(rv.computeVerticalScrollOffset()+50);
-//            } else {
-//                Log.i("Scroll",Float.toString(velocityY)+" "+rv.computeVerticalScrollOffset());
-//                rv.smoothScrollToPosition(rv.computeVerticalScrollOffset()-50);
-//            }
-            return true;
-        }
-
-        @Override
-        public boolean onSingleTapUp(MotionEvent e) {
-            return false;
-        }
-
-        @Override
-        public void onShowPress(MotionEvent e) {
-
-        }
-
-        @Override
-        public void onLongPress(MotionEvent e) {
-
-        }
+    public static void updateDoneToday() {
+        int number = doneToday;
+        if (number < 0) { number = 0; }
+        String doneToday = Integer.toString(number);
+        done_today.setText(doneToday);
     }
 
 }

@@ -116,5 +116,7 @@
     <string name="high">high</string>
     <string name="low">low</string>
     <string name="med">med</string>
+    <string name="date_yesterday">DateYesterday</string>
+    <string name="done_yesterday">DoneYesterday</string>
 
 </resources>
