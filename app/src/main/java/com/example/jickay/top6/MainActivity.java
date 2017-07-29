@@ -90,9 +90,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         updateDoneToday();
 
         done_yesterday = (TextView) findViewById(R.id.done_yesterday);
-
-        // Starting message
-        Snackbar.make(findViewById(R.id.main_activity), R.string.notfull_message, Snackbar.LENGTH_LONG).show();
     }
 
     @Override
@@ -112,7 +109,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onResume();
 
         // Show number done yesterday
-        done_yesterday.setText(sharedPref.getInt(getString(R.string.done_yesterday),0));
+        String done_yesterday_pref = getString(R.string.done_yesterday);
+        if (done_yesterday_pref != null) {
+            done_yesterday.setText(Integer.toString(sharedPref.getInt(done_yesterday_pref, 0)));
+        }
 
         // Get today's date; Clear complete if new day
         Calendar c = Calendar.getInstance();
@@ -149,8 +149,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_all_tasks) {
-            Intent intent = new Intent(MainActivity.this,AllTasks.class);
+        if (id == R.id.nav_current_tasks) {
+            Intent intent = new Intent(MainActivity.this, MainActivity.class);
+            startActivity(intent);
+        } else if (id == R.id.nav_completed_tasks) {
+            Intent intent = new Intent(MainActivity.this, CompletedTasks.class);
             startActivity(intent);
         } else if (id == R.id.nav_settings) {
             Intent intent = new Intent(MainActivity.this,Settings.class);
@@ -226,10 +229,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     public static void updateDoneToday() {
+        Log.i("DoneToday","Current count is " + doneToday);
         int number = doneToday;
         if (number < 0) { number = 0; }
-        String doneToday = Integer.toString(number);
-        done_today.setText(doneToday);
+        String count = Integer.toString(number);
+        done_today.setText(count);
     }
 
 }

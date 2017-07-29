@@ -11,7 +11,7 @@
 
     <!--Starting messages-->
     <string name="starting_message">Here are your Top 6 tasks for today!</string>
-    <string name="empty_message">The task list is empty!\nHit the + button to add a new task</string>
+    <string name="empty_message">The task list\nis empty!\nHit the + button\nto add a new task</string>
     <string name="notfull_message">Here are your current tasks!</string>
 
     <!--New task activity-->
@@ -118,5 +118,6 @@
     <string name="med">med</string>
     <string name="date_yesterday">DateYesterday</string>
     <string name="done_yesterday">DoneYesterday</string>
+    <string name="empty_completed">No completed tasks yet.\nGo back and finish some!</string>
 
 </resources>

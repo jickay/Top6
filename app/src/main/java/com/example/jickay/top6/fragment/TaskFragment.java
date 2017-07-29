@@ -39,10 +39,8 @@ public class TaskFragment extends Fragment {
 
     RecyclerView recView;
     TaskRecyclerAdapter adapter;
-    ArrayList<Task> tasks;
     Cursor cursor;
     TextView empty;
-    RelativeLayout background;
 
     public TaskFragment() {}
 
@@ -50,7 +48,6 @@ public class TaskFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         adapter = new TaskRecyclerAdapter(getActivity());
-        tasks = MainActivity.getIncompleteTasks();
     }
 
     @Override
@@ -60,7 +57,6 @@ public class TaskFragment extends Fragment {
         View v = inflater.inflate(R.layout.content_main, container, false);
         recView = (RecyclerView) v.findViewById(R.id.recycler);
         empty = (TextView) v.findViewById(R.id.empty_message);
-        background = (RelativeLayout) v.findViewById(R.id.main_content);
 
         return v;
     }
@@ -89,12 +85,10 @@ public class TaskFragment extends Fragment {
         if (!cursor.moveToFirst()) {
             recView.setVisibility(View.GONE);
             empty.setVisibility(View.VISIBLE);
-            background.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.colorPrimaryMed));
         // Show normal list of tasks in recycler view
         } else {
             recView.setVisibility(View.VISIBLE);
             empty.setVisibility(View.GONE);
-            background.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.cardview_light_background));
 
             // Set adapter to recycler view to fill content
             recView.setAdapter(adapter);

@@ -170,7 +170,7 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
                     setCompletion(currentId,true);
 
                     // Add to tasks done today
-                    MainActivity.setDoneToday(doneToday++);
+                    MainActivity.setDoneToday(doneToday+1);
                     MainActivity.updateDoneToday();
 
                     completeSnackbar(parent,viewHolder,currentId,textView,taskPos,color);
@@ -181,10 +181,10 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
                     setCompletion(currentId,false);
 
                     // Subtract from tasks done today
-                    MainActivity.setDoneToday(doneToday--);
+                    MainActivity.setDoneToday(doneToday-1);
                     MainActivity.updateDoneToday();
 
-                    Snackbar.make(parent, R.string.task_incomplete, Snackbar.LENGTH_LONG).show();
+                    Snackbar.make(parent, R.string.task_incomplete, Snackbar.LENGTH_SHORT).show();
                 }
             }
         });
@@ -198,7 +198,9 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
                     @Override
                     public void onClick(View view) {
                         setCompletion(currentId,false);
-                        setTaskNumView(textView,viewHolder,taskPos,ContextCompat.getColor(context,color));
+                        MainActivity.setDoneToday(MainActivity.getDoneToday()-1);
+                        MainActivity.updateDoneToday();
+                        setTaskNumView(textView,viewHolder,taskPos,color);
                         Snackbar.make(parent, R.string.task_incomplete, Snackbar.LENGTH_SHORT).show();
                     }
                 });

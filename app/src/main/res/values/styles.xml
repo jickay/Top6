@@ -25,6 +25,7 @@
         <item name="android:textColorSecondary">@color/colorPrimaryDark</item>
         <item name="colorControlNormal">@color/colorPrimaryDark</item>
         <item name="android:layout_alignParentBottom">true</item>
+        <item name="android:displayOptions">showHome|useLogo|showTitle</item>
     </style>
 
     <style name="drawerArrowStyle" parent="Widget.AppCompat.DrawerArrowToggle">

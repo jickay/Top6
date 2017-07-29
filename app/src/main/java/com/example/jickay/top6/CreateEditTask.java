@@ -213,7 +213,6 @@ public class CreateEditTask extends AppCompatActivity {
     private long saveNewTask() {
         // Get text from EditTexts at save
         titleString = title.getText().toString();
-        dateString = date.getText().toString();
         descString = desc.getText().toString();
 
         // Store values to insert
@@ -238,6 +237,10 @@ public class CreateEditTask extends AppCompatActivity {
         c = new CursorLoader(this,uri,null,null,null,null).loadInBackground();
         Log.i("FillTask","Cursor ID is "+id);
 
+        // Get date data from database
+        dateData = c.getString(c.getColumnIndex(TaskProvider.COLUMN_DATE));
+
+        // Set strings to display
         title.setText(c.getString(c.getColumnIndex(TaskProvider.COLUMN_TITLE)));
         date.setText(TaskRecyclerAdapter.formatDate(
                 c.getString(c.getColumnIndex(TaskProvider.COLUMN_DATE))));
@@ -248,7 +251,6 @@ public class CreateEditTask extends AppCompatActivity {
     private void saveTaskEdit(int id) {
         // Get text from EditTexts at save
         titleString = title.getText().toString();
-        dateString = date.getText().toString();
         descString = desc.getText().toString();
 
         // Store values to insert
