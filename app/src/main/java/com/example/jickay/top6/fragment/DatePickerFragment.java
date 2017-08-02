@@ -54,6 +54,7 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
             case 11: monthString = "Dec"; break;
         }
 
+        // Adding zero for single digit days for sorting
         String dayString = "";
         if (day < 10) {
             dayString = "0" + Integer.toString(day);

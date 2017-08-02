@@ -47,7 +47,7 @@ public class TaskFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        adapter = new TaskRecyclerAdapter(getActivity());
+        adapter = new TaskRecyclerAdapter(getActivity(),"current");
     }
 
     @Override

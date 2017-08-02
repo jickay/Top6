@@ -33,21 +33,17 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
     private static int LEADING_DAYS = 10;
     private int PER_PAGE = 3;
 
-    private static boolean clearCompleted = false;
-
     private Context context;
     private Cursor cursor;
     private int currentId;
+    private String listType;
 
     private ViewGroup parent;
 
-    public TaskRecyclerAdapter(Context c) {
+    public TaskRecyclerAdapter(Context c, String type) {
         context = c;
+        listType = type;
     }
-
-    public static boolean getClearCompleted() { return clearCompleted; }
-
-    public static void setClearCompleted(boolean value) { clearCompleted = value; }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         RelativeLayout cardView;
@@ -106,10 +102,22 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
         viewHolder.task_num.setText(taskPos);
         viewHolder.task_desc.setText(description);
 
-        if (completion_today == 1) {
-            setTaskNumView(taskNumView,viewHolder,"\u2714",R.color.colorAccent);
+        int completion_check = 0;
+        switch (listType) {
+            case "current":
+                completion_check = completion_today;
+                break;
+            default:
+                if ((completion_today | completion_before) == 1) {
+                    completion_check = 1;
+                }
+                break;
+        }
+
+        if (completion_check == 1) {
+            setTaskNumView(taskNumView, viewHolder, "\u2714", R.color.colorAccent);
         } else {
-            setTaskNumView(taskNumView,viewHolder,taskPos,importanceColor);
+            setTaskNumView(taskNumView, viewHolder, taskPos, importanceColor);
         }
 
         // Set urgency bar
@@ -170,8 +178,10 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
                     setCompletion(currentId,true);
 
                     // Add to tasks done today
-                    MainActivity.setDoneToday(doneToday+1);
-                    MainActivity.updateDoneToday();
+                    if (listType.matches("current")) {
+                        MainActivity.setDoneToday(doneToday + 1);
+                        MainActivity.updateDoneToday();
+                    }
 
                     completeSnackbar(parent,viewHolder,currentId,textView,taskPos,color);
                 } else {
@@ -181,8 +191,10 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
                     setCompletion(currentId,false);
 
                     // Subtract from tasks done today
-                    MainActivity.setDoneToday(doneToday-1);
-                    MainActivity.updateDoneToday();
+                    if (listType.matches("current")) {
+                        MainActivity.setDoneToday(doneToday - 1);
+                        MainActivity.updateDoneToday();
+                    }
 
                     Snackbar.make(parent, R.string.task_incomplete, Snackbar.LENGTH_SHORT).show();
                 }
@@ -209,12 +221,24 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
 
     private void setCompletion(int currentId, boolean completed) {
         ContentValues values = new ContentValues();
-        if (completed) {
-            values.put(TaskProvider.COLUMN_COMPLETION_TODAY, 1);
-            Log.i("CompletionValue","ID of "+currentId+" set to 1");
-        } else {
-            values.put(TaskProvider.COLUMN_COMPLETION_TODAY, 0);
-            Log.i("CompletionValue","ID of "+currentId+" set to 0");
+        switch (listType) {
+            case "current":
+                if (completed) {
+                    values.put(TaskProvider.COLUMN_COMPLETION_TODAY, 1);
+                    Log.i("CompletionValue", "ID of " + currentId + " set to 1");
+                } else {
+                    values.put(TaskProvider.COLUMN_COMPLETION_TODAY, 0);
+                    Log.i("CompletionValue", "ID of " + currentId + " set to 0");
+                }
+                break;
+            default:
+                if (completed) {
+                    values.put(TaskProvider.COLUMN_COMPLETION_BEFORE, 1);
+                    Log.i("CompletionValue", "ID of " + currentId + " set to 1");
+                } else {
+                    values.put(TaskProvider.COLUMN_COMPLETION_BEFORE, 0);
+                    Log.i("CompletionValue", "ID of " + currentId + " set to 0");
+                }
         }
         Uri uri = ContentUris.withAppendedId(TaskProvider.CONTENT_URI,currentId);
         parent.getContext().getContentResolver().update(uri,values,null,null);

@@ -29,10 +29,6 @@ import com.example.jickay.top6.fragment.DatePickerFragment;
 import com.example.jickay.top6.fragment.TaskFragment;
 import com.example.jickay.top6.provider.TaskProvider;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-
 
 public class CreateEditTask extends AppCompatActivity {
 
@@ -61,7 +57,7 @@ public class CreateEditTask extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         TaskFragment.setFullscreenWithNavigation(this);
-        setContentView(R.layout.activity_edit_task);
+        setContentView(R.layout.activity_create_edit_task);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 

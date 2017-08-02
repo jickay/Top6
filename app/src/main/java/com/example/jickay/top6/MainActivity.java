@@ -24,6 +24,7 @@ import android.view.MenuItem;
 import android.widget.TextView;
 
 import com.example.jickay.top6.provider.TaskProvider;
+import com.example.jickay.top6.settings.SettingsActivity;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -93,12 +94,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
+    protected void onStop() {
+        super.onStop();
 
         // Store last day used
         Calendar c = Calendar.getInstance();
         int lastDay = c.get(Calendar.DAY_OF_YEAR);
+        Log.i("NewDayDetection", "Last day is " + lastDay);
 
         prefEditor.putInt(getString(R.string.date_yesterday), lastDay);
         prefEditor.commit();
@@ -108,12 +110,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onResume() {
         super.onResume();
 
-        // Show number done yesterday
-        String done_yesterday_pref = getString(R.string.done_yesterday);
-        if (done_yesterday_pref != null) {
-            done_yesterday.setText(Integer.toString(sharedPref.getInt(done_yesterday_pref, 0)));
-        }
-
         // Get today's date; Clear complete if new day
         Calendar c = Calendar.getInstance();
         int thisDay = c.get(Calendar.DAY_OF_YEAR);
@@ -122,9 +118,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         if (thisDay > lastDay) {
             Log.i("NewDayDetection",Integer.toString(thisDay) + " is later than " + Integer.toString(lastDay));
-            // Store number done yesterday
-            prefEditor.putInt(getString(R.string.done_yesterday),doneToday);
-            prefEditor.commit();
+            // Set number done yesterday, zero out done today
+            updateDoneYesterday();
+            doneToday = 0;
+            updateDoneToday();
             // Clear complete today to not show on recycler
             clearCompleted();
         }
@@ -149,14 +146,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_current_tasks) {
-            Intent intent = new Intent(MainActivity.this, MainActivity.class);
+        if (id == R.id.nav_all_tasks) {
+            Intent intent = new Intent(MainActivity.this, AltTaskLists.class);
+            intent.putExtra("ListType","all");
             startActivity(intent);
         } else if (id == R.id.nav_completed_tasks) {
-            Intent intent = new Intent(MainActivity.this, CompletedTasks.class);
+            Intent intent = new Intent(MainActivity.this, AltTaskLists.class);
+            intent.putExtra("ListType","completed");
             startActivity(intent);
         } else if (id == R.id.nav_settings) {
-            Intent intent = new Intent(MainActivity.this,Settings.class);
+            Intent intent = new Intent(MainActivity.this,SettingsActivity.class);
             startActivity(intent);
         }
 
@@ -206,25 +205,23 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void clearCompleted() {
-        if (TaskRecyclerAdapter.getClearCompleted()) {
-            // Get all tasks complete today
-            Uri allCompleted = TaskProvider.CONTENT_URI;
-            String where = "CAST(" + TaskProvider.COLUMN_COMPLETION_TODAY + " as TEXT) =?";
-            String[] filter = new String[]{"1"};
-            String sortOrder = TaskProvider.COLUMN_DATE + " ASC";
-            Cursor cursor = new CursorLoader(this, allCompleted, null, where, filter, sortOrder).loadInBackground();
+        // Get all tasks complete today
+        Uri allCompleted = TaskProvider.CONTENT_URI;
+        String where = "CAST(" + TaskProvider.COLUMN_COMPLETION_TODAY + " as TEXT) =?";
+        String[] filter = new String[]{"1"};
+        String sortOrder = TaskProvider.COLUMN_DATE + " ASC";
+        Cursor cursor = new CursorLoader(this, allCompleted, null, where, filter, sortOrder).loadInBackground();
 
-            // Change value as complete before to prevent loading on main activity
-            if (cursor.moveToFirst()) {
-                do {
-                    long id = cursor.getLong(cursor.getColumnIndex(TaskProvider.COLUMN_TASKID));
-                    Uri eachCompleted = ContentUris.withAppendedId(TaskProvider.CONTENT_URI, id);
-                    ContentValues values = new ContentValues();
-                    values.put(TaskProvider.COLUMN_COMPLETION_TODAY, 0);
-                    values.put(TaskProvider.COLUMN_COMPLETION_BEFORE, 1);
-                    getContentResolver().update(eachCompleted, values, null, null);
-                } while (cursor.moveToNext());
-            }
+        // Change value as complete before to prevent loading on main activity
+        if (cursor.moveToFirst()) {
+            do {
+                long id = cursor.getLong(cursor.getColumnIndex(TaskProvider.COLUMN_TASKID));
+                Uri eachCompleted = ContentUris.withAppendedId(TaskProvider.CONTENT_URI, id);
+                ContentValues values = new ContentValues();
+                values.put(TaskProvider.COLUMN_COMPLETION_TODAY, 0);
+                values.put(TaskProvider.COLUMN_COMPLETION_BEFORE, 1);
+                getContentResolver().update(eachCompleted, values, null, null);
+            } while (cursor.moveToNext());
         }
     }
 
@@ -234,6 +231,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (number < 0) { number = 0; }
         String count = Integer.toString(number);
         done_today.setText(count);
+    }
+
+    public void updateDoneYesterday() {
+        Log.i("DoneYesterday","Current count is " + doneToday);
+        int number = doneToday;
+        if (number < 0) { number = 0; }
+        String count = Integer.toString(number);
+        done_yesterday.setText(count);
     }
 
 }
