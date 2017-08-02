@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="com.example.jickay.top6.CreateEditTask"
-    tools:showIn="@layout/activity_edit_task">
+    tools:showIn="@layout/activity_create_edit_task">
 
     <EditText
         android:id="@+id/title"
@@ -45,7 +45,7 @@
         android:layout_height="wrap_content"
         android:ems="10"
         android:inputType="textMultiLine"
-        android:maxLength="180"
+        android:maxLength="140"
         android:hint="@string/desc_hint"
         android:paddingLeft="24dp"
         android:layout_marginTop="24dp"
@@ -77,22 +77,22 @@
             app:layout_constraintRight_toLeftOf="@+id/importance2" />
 
         <RadioButton
-            android:id="@+id/importance3"
+            android:id="@+id/importance2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             android:text="@string/med"
-            android:theme="@style/Radio3"
+            android:theme="@style/Radio2"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintRight_toLeftOf="@+id/importance4" />
 
         <RadioButton
-            android:id="@+id/importance5"
+            android:id="@+id/importance3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             android:text="@string/high"
-            android:theme="@style/Radio5"
+            android:theme="@style/Radio3"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintRight_toRightOf="parent" />
 

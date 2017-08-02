@@ -1,55 +1,69 @@
 package com.example.jickay.top6;
 
 import android.app.Activity;
+import android.content.ContentUris;
+import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.CursorLoader;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.view.MenuItem;
+import android.widget.TextView;
+
+import com.example.jickay.top6.provider.TaskProvider;
+import com.example.jickay.top6.settings.SettingsActivity;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
 
-    static int LEADING_DAYS = 10;
+    private int LEADING_DAYS = 10;
+
+    private static int doneToday = 0;
+
+    private SharedPreferences sharedPref;
+    private SharedPreferences.Editor prefEditor;
+
+    private static TextView done_today;
+    private TextView done_yesterday;
 
     private static ArrayList<Task> incompleteTasks = new ArrayList<>();
     private static ArrayList<Task> completedTasks = new ArrayList<>();
     private static ArrayList<Task> deletedTasks = new ArrayList<>();
 
-    private FileWriter fileWriter;
-
     // Getter methods
+    public static int getDoneToday() { return doneToday; }
     public static ArrayList<Task> getIncompleteTasks() { return incompleteTasks; }
     public static ArrayList<Task> getCompletedTasks() { return completedTasks; }
     public static ArrayList<Task> getDeletedTasks() { return deletedTasks; }
 
+    // Setter methods
+    public static void setDoneToday(int number) { doneToday = number; }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // Load from file
-        fileWriter = new FileWriter();
-        fileWriter.onLoad(this);
-
-        // Calculate urgency for each task
-        for (Task task : incompleteTasks) {
-            getUrgency(task);
-        }
-
         // Sort tasks with priority algorithm
-
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigation);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+
+        // Preferences editor
+        sharedPref = getPreferences(Context.MODE_PRIVATE);
+        prefEditor = sharedPref.edit();
 
         // Add task button
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.add_task_btn);
@@ -59,6 +73,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 Intent intent = new Intent(MainActivity.this, CreateEditTask.class);
                 intent.putExtra("Intent","new");
                 startActivityForResult(intent,0);
+                Log.i("New task","New task started");
             }
         });
 
@@ -71,17 +86,50 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        // Starting message
-        if (incompleteTasks.size()>6) {
-            Snackbar.make(findViewById(R.id.main_activity), R.string.starting_message, Snackbar.LENGTH_LONG).show();
-        } else if (incompleteTasks.size()>0 && incompleteTasks.size()<6) {
-            Snackbar.make(findViewById(R.id.main_activity), R.string.notfull_message, Snackbar.LENGTH_LONG).show();
+        // Set completion count for today and yesterday
+        done_today = (TextView) findViewById(R.id.done_today);
+        updateDoneToday();
+
+        done_yesterday = (TextView) findViewById(R.id.done_yesterday);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        // Store last day used
+        Calendar c = Calendar.getInstance();
+        int lastDay = c.get(Calendar.DAY_OF_YEAR);
+        Log.i("NewDayDetection", "Last day is " + lastDay);
+
+        prefEditor.putInt(getString(R.string.date_yesterday), lastDay);
+        prefEditor.commit();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // Get today's date; Clear complete if new day
+        Calendar c = Calendar.getInstance();
+        int thisDay = c.get(Calendar.DAY_OF_YEAR);
+        int lastDay = sharedPref.getInt(getString(R.string.date_yesterday), 0);
+        Log.i("NewDayDetection","ThisDay: " + Integer.toString(thisDay) + ", LastDay: " + Integer.toString(lastDay));
+
+        if (thisDay > lastDay) {
+            Log.i("NewDayDetection",Integer.toString(thisDay) + " is later than " + Integer.toString(lastDay));
+            // Set number done yesterday, zero out done today
+            updateDoneYesterday();
+            doneToday = 0;
+            updateDoneToday();
+            // Clear complete today to not show on recycler
+            clearCompleted();
         }
     }
 
     /*
-            Navigation drawer menu methods
-         */
+                    Navigation drawer menu methods
+                 */
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -99,13 +147,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         int id = item.getItemId();
 
         if (id == R.id.nav_all_tasks) {
-            Intent intent = new Intent(MainActivity.this,AllTasks.class);
+            Intent intent = new Intent(MainActivity.this, AltTaskLists.class);
+            intent.putExtra("ListType","all");
             startActivity(intent);
         } else if (id == R.id.nav_completed_tasks) {
-            Intent intent = new Intent(MainActivity.this,CompletedTasks.class);
+            Intent intent = new Intent(MainActivity.this, AltTaskLists.class);
+            intent.putExtra("ListType","completed");
             startActivity(intent);
         } else if (id == R.id.nav_settings) {
-            Intent intent = new Intent(MainActivity.this,Settings.class);
+            Intent intent = new Intent(MainActivity.this,SettingsActivity.class);
             startActivity(intent);
         }
 
@@ -124,16 +174,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (requestCode == 0) {
             // New task to be added
             if (resultCode == Activity.RESULT_OK) {
-                // Get date from intent
-                Bundle newData = intent.getBundleExtra("NewTask");
-                // Construct new Task object using data
-                Task task = new Task(newData.getString("title"),
-                        newData.getString("date"),
-                        newData.getString("description"),
-                        newData.getInt("importance"));
-                getUrgency(task);
-                incompleteTasks.add(task);
-                saveTaskFile();
                 Snackbar.make(findViewById(R.id.main_activity), R.string.new_task_added, Snackbar.LENGTH_SHORT).show();
             // New task cancelled
             } else if (resultCode == Activity.RESULT_CANCELED) {
@@ -145,71 +185,60 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             if (resultCode == Activity.RESULT_OK) {
                 String action = intent.getStringExtra("Action");
                 if (action.matches("delete")) {
-                    saveTaskFile();
                     Snackbar mySnackbar = Snackbar.make(findViewById(R.id.main_activity), R.string.task_deleted, Snackbar.LENGTH_LONG)
+                            // Undo recent task delete
                             .setAction(R.string.undo, new View.OnClickListener() {
                                 @Override
                                 public void onClick(View view) {
-                                    // Undo recent task delete
+
                                     Task lastDeletedTask = deletedTasks.get(deletedTasks.size()-1);
                                     MainActivity.getIncompleteTasks().add(intent.getExtras().getInt("UndoPos"),lastDeletedTask);
-                                    saveTaskFile();
                                     Snackbar.make(findViewById(R.id.main_activity), R.string.task_restored, Snackbar.LENGTH_SHORT).show();
                                 }
                             });
                     mySnackbar.show();
                 } else if (action.matches("edit")) {
-                    saveTaskFile();
                     Snackbar.make(findViewById(R.id.main_activity), R.string.task_edits_saved, Snackbar.LENGTH_SHORT).show();
                 }
-//                listView.setAdapter(taskAdapter);
-            }
-            else if (resultCode == Activity.RESULT_CANCELED) {
-//                listView.setAdapter(taskAdapter);
             }
         }
     }
 
-    private void saveTaskFile() {
-        fileWriter.onSave(this);
-    }
+    private void clearCompleted() {
+        // Get all tasks complete today
+        Uri allCompleted = TaskProvider.CONTENT_URI;
+        String where = "CAST(" + TaskProvider.COLUMN_COMPLETION_TODAY + " as TEXT) =?";
+        String[] filter = new String[]{"1"};
+        String sortOrder = TaskProvider.COLUMN_DATE + " ASC";
+        Cursor cursor = new CursorLoader(this, allCompleted, null, where, filter, sortOrder).loadInBackground();
 
-    private void loadTaskFile() {
-        fileWriter.onLoad(this);
-    }
-
-    public static void getUrgency(Task thisTask) {
-        int taskDay = Integer.parseInt(thisTask.getDate().split(" ")[1]);
-        //Calculate value for progress bar
-        Calendar c = Calendar.getInstance();
-        int currentDay = c.get(Calendar.DAY_OF_MONTH);
-        int daysInMonth = c.getActualMaximum(Calendar.DAY_OF_MONTH);
-
-        int difference;
-        if (taskDay >= currentDay) {
-            difference = taskDay - currentDay;
-        } else {
-            int remainingDays = daysInMonth - currentDay;
-            difference = taskDay + remainingDays;
-        }
-
-        int daysRemaining = LEADING_DAYS-difference;
-        int progressValue = 0;
-
-        //Set progress bar length
-        if (difference <= LEADING_DAYS) {
-            progressValue = 100/LEADING_DAYS * daysRemaining;
-        }
-
-        thisTask.setUrgency(progressValue);
-    }
-
-    private void sortByPriority() {
-        int buffer = 10;
-        int i = 0;
-        while (i<buffer && i<incompleteTasks.size()) {
+        // Change value as complete before to prevent loading on main activity
+        if (cursor.moveToFirst()) {
+            do {
+                long id = cursor.getLong(cursor.getColumnIndex(TaskProvider.COLUMN_TASKID));
+                Uri eachCompleted = ContentUris.withAppendedId(TaskProvider.CONTENT_URI, id);
+                ContentValues values = new ContentValues();
+                values.put(TaskProvider.COLUMN_COMPLETION_TODAY, 0);
+                values.put(TaskProvider.COLUMN_COMPLETION_BEFORE, 1);
+                getContentResolver().update(eachCompleted, values, null, null);
+            } while (cursor.moveToNext());
         }
     }
 
+    public static void updateDoneToday() {
+        Log.i("DoneToday","Current count is " + doneToday);
+        int number = doneToday;
+        if (number < 0) { number = 0; }
+        String count = Integer.toString(number);
+        done_today.setText(count);
+    }
+
+    public void updateDoneYesterday() {
+        Log.i("DoneYesterday","Current count is " + doneToday);
+        int number = doneToday;
+        if (number < 0) { number = 0; }
+        String count = Integer.toString(number);
+        done_yesterday.setText(count);
+    }
 
 }
