@@ -119,14 +119,6 @@ public class NewTask extends AppCompatActivity {
                 if (checked)
                     value = 3;
                 break;
-            case R.id.importance4:
-                if (checked)
-                    value = 4;
-                break;
-            case R.id.importance5:
-                if (checked)
-                    value = 5;
-                break;
         }
 
         return value;
