@@ -6,16 +6,18 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Color;
+import android.media.Image;
 import android.net.Uri;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.content.CursorLoader;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -32,6 +34,11 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
 {
     private static int LEADING_DAYS = 10;
     private int PER_PAGE = 3;
+    private int WHITE_BACKGROUND = R.color.cardview_light_background;
+    private int RED_BACKGROUND = R.color.colorOverdue;
+    private int GREEN_BACKGROUND = R.color.colorAccent;
+    private int WHITE_TEXT = R.color.cardview_light_background;
+    private int BLACK_TEXT = R.color.cardview_dark_background;
 
     private Context context;
     private Cursor cursor;
@@ -47,23 +54,30 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         RelativeLayout cardView;
+        RelativeLayout textLayout;
         TextView task_title;
         TextView task_date;
         TextView task_num;
         TextView task_desc;
         ProgressBar bar;
-        FloatingActionButton fab;
+        ImageView edit_button;
+        ImageView delay_button;
+        ImageView complete_button;
 
         private ViewHolder(RelativeLayout card){
             super(card);
             cardView = card;
+            textLayout = (RelativeLayout) cardView.findViewById(R.id.textLayout);
 
             task_title = (TextView) cardView.findViewById(R.id.task_title);
             task_date = (TextView) cardView.findViewById(R.id.task_date);
             task_num = (TextView) cardView.findViewById(R.id.task_num);
             task_desc = (TextView) cardView.findViewById(R.id.task_description);
-            bar = (ProgressBar) cardView.findViewById(R.id.progress_circle);
-            fab = (FloatingActionButton) cardView.findViewById(R.id.edit_fab);
+            bar = (ProgressBar) cardView.findViewById(R.id.progress_bar);
+
+            edit_button = (ImageView) cardView.findViewById(R.id.edit_button);
+            delay_button = (ImageView) cardView.findViewById(R.id.delay_button);
+            complete_button = (ImageView) cardView.findViewById(R.id.complete_button);
         }
     }
 
@@ -91,17 +105,19 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
         Log.i("Database", "Pos: " + (i + 1) + " Loading task: " + currentId + ","
                 + title + "," + date + "," + description + "," + importance + "," + completion_today + "," + completion_before);
 
-        // Set text for views
+        // Set variables
         TextView taskNumView = viewHolder.task_num;
         String taskPos = Integer.toString(i + 1);
         String dateString = formatDate(date);
         int importanceColor = getImportanceColor(importance);
 
+        // Set text for views
         viewHolder.task_title.setText(title);
         viewHolder.task_date.setText(dateString);
         viewHolder.task_num.setText(taskPos);
         viewHolder.task_desc.setText(description);
 
+        // Set starting completion
         int completion_check = 0;
         switch (listType) {
             case "current":
@@ -114,21 +130,21 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
                 break;
         }
 
-        if (completion_check == 1) {
-            setTaskNumView(taskNumView, viewHolder, "\u2714", R.color.colorAccent);
-        } else {
-            setTaskNumView(taskNumView, viewHolder, taskPos, importanceColor);
+        switch (completion_check) {
+            case 1:
+                setCardColors(viewHolder, "\u2714", GREEN_BACKGROUND, GREEN_BACKGROUND, WHITE_TEXT, GREEN_BACKGROUND);
+                break;
+            default:
+                setCardColors(viewHolder, taskPos, importanceColor, WHITE_BACKGROUND, BLACK_TEXT, importanceColor);
+                checkOverdue(viewHolder, dateString, taskPos, title);
+                break;
         }
 
-        // Set urgency bar
-        int progress = getUrgency(dateString);
-        viewHolder.bar.setProgress(progress);
-
         // Set completion listener for task_num view
-        setCompletionListener(parent, viewHolder, taskNumView, taskPos, importanceColor, i);
+        setCompletionListener(parent, viewHolder, viewHolder.complete_button, taskNumView, dateString, taskPos, title, importanceColor, i);
 
         // Set button listener to edit task card
-        editCardListener(viewHolder.fab, i);
+        editCardListener(viewHolder.edit_button, i);
     }
 
     @Override
@@ -137,10 +153,10 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
         return count;
     }
 
-    private void editCardListener(final FloatingActionButton fab,
+    private void editCardListener(final ImageView edit_button,
                                   final int i) {
         // Listener for clicking a task in the list
-        fab.setOnClickListener(new View.OnClickListener() {
+        edit_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 cursor.moveToPosition(i);
@@ -151,19 +167,17 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
                 // Get ID from database
                 intent.putExtra("ID",currentId);
                 // Start activity
-                ((Activity)fab.getContext()).startActivityForResult(intent, 1);
+                ((Activity)edit_button.getContext()).startActivityForResult(intent, 1);
             }
         });
     }
 
-    private void setCompletionListener(final ViewGroup parent,
-                                       final ViewHolder viewHolder,
-                                       final TextView textView,
-                                       final String taskPos,
-                                       final int color,
-                                       final int i) {
+    private void setCompletionListener(final ViewGroup parent, final ViewHolder viewHolder,
+                                       final ImageView complete_button, final TextView textView,
+                                       final String dateString, final String taskPos, final String title,
+                                       final int importanceColor, final int i) {
         // Toggle completion when number is clicked
-        textView.setOnClickListener(new View.OnClickListener() {
+        complete_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // Set cursor to appropriate row
@@ -172,7 +186,8 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
 
                 int doneToday = MainActivity.getDoneToday();
                 if (textView.getText() != "\u2714") {
-                    setTaskNumView(textView,viewHolder,"\u2714",R.color.colorAccent);
+                    setCardColors(viewHolder,"\u2714",GREEN_BACKGROUND,GREEN_BACKGROUND,WHITE_TEXT,GREEN_BACKGROUND);
+                    viewHolder.task_title.setText(title);
 
                     // Update row in database
                     setCompletion(currentId,true);
@@ -183,9 +198,11 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
                         MainActivity.updateDoneToday();
                     }
 
-                    completeSnackbar(parent,viewHolder,currentId,textView,taskPos,color);
+                    completeSnackbar(parent,viewHolder,currentId,dateString,taskPos,title,importanceColor);
                 } else {
-                    setTaskNumView(textView,viewHolder,taskPos,color);
+                    setCardColors(viewHolder,taskPos,importanceColor,WHITE_BACKGROUND,BLACK_TEXT,importanceColor);
+                    checkOverdue(viewHolder, dateString, taskPos, title);
+                    viewHolder.task_title.setText(title);
 
                     // Update row in database
                     setCompletion(currentId,false);
@@ -204,7 +221,8 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
 
     private void completeSnackbar(final ViewGroup parent,
                                   final ViewHolder viewHolder, final int currentId,
-                                  final TextView textView, final String taskPos, final int color) {
+                                  final String dateString, final String taskPos,  final String title,
+                                  final int importanceColor) {
         Snackbar mySnackbar = Snackbar.make(parent, R.string.task_completed, Snackbar.LENGTH_LONG)
                 .setAction(R.string.undo, new View.OnClickListener() {
                     @Override
@@ -212,7 +230,8 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
                         setCompletion(currentId,false);
                         MainActivity.setDoneToday(MainActivity.getDoneToday()-1);
                         MainActivity.updateDoneToday();
-                        setTaskNumView(textView,viewHolder,taskPos,color);
+                        setCardColors(viewHolder,taskPos,importanceColor,WHITE_BACKGROUND,BLACK_TEXT,BLACK_TEXT);
+                        checkOverdue(viewHolder, dateString, taskPos, title);
                         Snackbar.make(parent, R.string.task_incomplete, Snackbar.LENGTH_SHORT).show();
                     }
                 });
@@ -244,15 +263,20 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
         parent.getContext().getContentResolver().update(uri,values,null,null);
     }
 
-    public void setTaskNumView (TextView textView, ViewHolder viewHolder,
-                               String text, int color) {
+    private void setCardColors(ViewHolder viewHolder, String text,
+                               int colorSide, int colorMain, int textColor, int progressColor) {
         // Set to checkmark character
-        textView.setText(text);
+        viewHolder.task_num.setText(text);
 
         // Set color to completion color
-        viewHolder.task_num.setBackgroundColor(ContextCompat.getColor(context,color));
-        viewHolder.task_date.setBackgroundColor(ContextCompat.getColor(context,color));
-        viewHolder.bar.setBackgroundColor(ContextCompat.getColor(context,color));
+        viewHolder.task_num.setBackgroundColor(ContextCompat.getColor(context,colorSide));
+        viewHolder.task_date.setBackgroundColor(ContextCompat.getColor(context,colorSide));
+        viewHolder.bar.setBackgroundColor(ContextCompat.getColor(context,progressColor));
+        viewHolder.bar.setProgress(ContextCompat.getColor(context,progressColor));
+
+        viewHolder.textLayout.setBackgroundColor(ContextCompat.getColor(context,colorMain));
+        viewHolder.task_title.setTextColor(ContextCompat.getColor(context,textColor));
+        viewHolder.task_desc.setTextColor(ContextCompat.getColor(context,textColor));
     }
 
     public void swapCursor(Cursor cursor) {
@@ -272,6 +296,18 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
             case 3: color = R.color.importance_high; break;
         }
         return color;
+    }
+
+    private void checkOverdue(ViewHolder viewHolder, String dateString, String taskPos, String title) {
+        // Set urgency bar and check if overdue
+        int progress = getUrgency(dateString);
+        if (progress >= 0) {
+            viewHolder.bar.setProgress(progress);
+        } else {
+            viewHolder.bar.setProgress(100);
+            setCardColors(viewHolder, taskPos, RED_BACKGROUND, RED_BACKGROUND, WHITE_TEXT, RED_BACKGROUND);
+            viewHolder.task_title.setText("OVERDUE: " + title);
+        }
     }
 
     public static int getUrgency(String date) {
@@ -297,6 +333,8 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
             //Set progress bar length
             if (difference <= LEADING_DAYS) {
                 progressValue = 100 / LEADING_DAYS * daysRemaining;
+            } else {
+                progressValue = -1;
             }
         }
 

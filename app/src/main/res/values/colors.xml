@@ -2,10 +2,12 @@
 <resources>
     <!--Main theme colors-->
     <color name="colorPrimary">#ffffff</color>
+    <color name="colorPrimaryLight">#efefef</color>
     <color name="colorPrimaryMed">#aaaaaa</color>
     <color name="colorPrimaryDark">#000000</color>
     <color name="colorAccent">#b0e500</color>
     <color name="colorTextPrimary">#000000</color>
+    <color name="colorOverdue">#ea0707</color>
 
     <!--Progress bar-->
     <color name="progressBarForeground">#000000</color>
