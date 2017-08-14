@@ -70,16 +70,12 @@ public class CreateEditTask extends AppCompatActivity {
         save = (FloatingActionButton) findViewById(R.id.save_task);
         cancelDelete = (FloatingActionButton) findViewById(R.id.cancel_delete_task);
 
-        // Get intent type
-        final String intent = getIntent().getStringExtra("Intent");
+        // Get intent type and use corresponding create or edit code
+        final String intentType = getIntent().getStringExtra("Intent");
 
-        // For adding new tasks
-        if (intent.matches("new")) {
-            newTaskActivity();
-        }
-        // For editing existing tasks
-        if (intent.matches("edit")) {
-            editTaskActivity(intent);
+        switch (intentType) {
+            case "new": newTaskActivity(); break;
+            case "edit": editTaskActivity(intentType); break;
         }
 
         // Open date picker
@@ -88,14 +84,14 @@ public class CreateEditTask extends AppCompatActivity {
             public void onFocusChange(View v, boolean hasFocus) {
                 if (hasFocus) {
                     // Open date picking dialog
-                    showDatePickerDialog(v,date);
+                    showDatePickerDialog();
                 }
             }
         });
 
-        // Clear focus when hit enter
-        setClearFocusOnEnter(title);
-        setClearFocusOnEnter(desc);
+        // Focus keyboard controls
+        setClearFocusOnEnter(title,"title");
+        setClearFocusOnEnter(desc,"");
 
         // Set value based on importance
         importance.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
@@ -111,11 +107,15 @@ public class CreateEditTask extends AppCompatActivity {
         this.setTitle(R.string.title_activity_new_task);
         cancelDelete.setImageDrawable(ContextCompat.getDrawable(this, android.R.drawable.ic_menu_close_clear_cancel));
 
+        // Show keyboard for quicker creation of new tasks
+        openKeyboardOnFocus(title);
+        openKeyboardOnFocus(desc);
+
         // Save new tasks
         save.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                hideKeyboard();
+                controlKeyboard("hide");
 
                 if (inputValid()) {
                     long id = saveNewTask();
@@ -271,7 +271,7 @@ public class CreateEditTask extends AppCompatActivity {
         Log.i("DeleteTask","Entry deleted: ID "+id);
     }
 
-    private void showDatePickerDialog(View v, EditText field) {
+    private void showDatePickerDialog() {
         DialogFragment df = new DatePickerFragment();
         df.show(getFragmentManager(), "datePicker");
     }
@@ -315,20 +315,41 @@ public class CreateEditTask extends AppCompatActivity {
         }
     }
 
-    private void hideKeyboard() {
-        InputMethodManager input = (InputMethodManager) getSystemService(getApplicationContext().INPUT_METHOD_SERVICE);
-        input.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(),0);
+    private void openKeyboardOnFocus(View view) {
+        view.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus) {
+                    controlKeyboard("show");
+                }
+            }
+        });
     }
 
-    private void setClearFocusOnEnter(View v) {
+    private void controlKeyboard(String command) {
+        InputMethodManager input = (InputMethodManager) getSystemService(getApplicationContext().INPUT_METHOD_SERVICE);
+        switch (command) {
+            case "hide": input.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0); break;
+            case "show": input.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0); break;
+        }
+    }
+
+    private void setClearFocusOnEnter(View v, final String viewType) {
         v.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
+                // When detecting enter key
                 if (event.getAction()==KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER) {
                     getCurrentFocus().clearFocus();
-                    hideKeyboard();
+                    controlKeyboard("hide");
+
+                    if (viewType.matches("title")) {
+                        date.requestFocus();
+                    }
+
                     return true;
                 }
+
                 return false;
             }
         });

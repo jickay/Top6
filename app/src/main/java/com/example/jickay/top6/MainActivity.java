@@ -22,7 +22,9 @@ import android.util.Log;
 import android.view.View;
 import android.view.MenuItem;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.example.jickay.top6.fragment.TaskFragment;
 import com.example.jickay.top6.provider.TaskProvider;
 import com.example.jickay.top6.settings.SettingsActivity;
 
@@ -35,7 +37,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private static int doneToday = 0;
 
-    private SharedPreferences sharedPref;
+    private static SharedPreferences sharedPref;
     private SharedPreferences.Editor prefEditor;
 
     private static TextView done_today;
@@ -60,10 +62,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigation);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
         // Preferences editor
         sharedPref = getPreferences(Context.MODE_PRIVATE);
         prefEditor = sharedPref.edit();
+
+        getCompletedToday(this);
 
         // Add task button
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.add_task_btn);
@@ -88,8 +93,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         // Set completion count for today and yesterday
         done_today = (TextView) findViewById(R.id.done_today);
-        updateDoneToday();
-
         done_yesterday = (TextView) findViewById(R.id.done_yesterday);
     }
 
@@ -110,26 +113,34 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onResume() {
         super.onResume();
 
-        // Get today's date; Clear complete if new day
+        // Get count of currently completed tasks from db and set to local variable
+        getCompletedToday(this);
+
+        // Get today's date
         Calendar c = Calendar.getInstance();
         int thisDay = c.get(Calendar.DAY_OF_YEAR);
         int lastDay = sharedPref.getInt(getString(R.string.date_yesterday), 0);
         Log.i("NewDayDetection","ThisDay: " + Integer.toString(thisDay) + ", LastDay: " + Integer.toString(lastDay));
 
+        // Clear completed if new day
         if (thisDay > lastDay) {
             Log.i("NewDayDetection",Integer.toString(thisDay) + " is later than " + Integer.toString(lastDay));
+            // Store number done before clearing into yesterday preference; zero out today preference
+            moveTodayCountToYesterday();
             // Set number done yesterday, zero out done today
             updateDoneYesterday();
-            doneToday = 0;
             updateDoneToday();
             // Clear complete today to not show on recycler
             clearCompleted();
+        } else {
+            updateDoneToday();
+            updateDoneYesterday();
         }
     }
 
     /*
-                    Navigation drawer menu methods
-                 */
+        Navigation drawer menu methods
+     */
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -204,6 +215,28 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
+    public void getCompletedToday(Context context) {
+        // Get all tasks complete today
+        Uri allCompleted = TaskProvider.CONTENT_URI;
+        String where = "CAST(" + TaskProvider.COLUMN_COMPLETION_TODAY + " as TEXT) =?";
+        String[] filter = new String[]{"1"};
+        String sortOrder = TaskProvider.COLUMN_DATE + " ASC";
+        Cursor cursor = new CursorLoader(context, allCompleted, null, where, filter, sortOrder).loadInBackground();
+
+        // Count number in list
+        int count = 0;
+        if (cursor.moveToFirst()) {
+            do {
+                count++;
+            } while (cursor.moveToNext());
+        }
+
+        prefEditor.putInt(getString(R.string.done_today), count);
+        prefEditor.commit();
+
+        doneToday = count;
+    }
+
     private void clearCompleted() {
         // Get all tasks complete today
         Uri allCompleted = TaskProvider.CONTENT_URI;
@@ -235,10 +268,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     public void updateDoneYesterday() {
         Log.i("DoneYesterday","Current count is " + doneToday);
-        int number = doneToday;
+        int number = sharedPref.getInt(getString(R.string.done_yesterday), 0);
         if (number < 0) { number = 0; }
         String count = Integer.toString(number);
         done_yesterday.setText(count);
+    }
+
+    private void moveTodayCountToYesterday() {
+        int number = sharedPref.getInt(getString(R.string.done_today), 0);
+        prefEditor.putInt(getString(R.string.done_yesterday), number);
+        prefEditor.putInt(getString(R.string.done_today),0);
+        prefEditor.commit();
     }
 
 }

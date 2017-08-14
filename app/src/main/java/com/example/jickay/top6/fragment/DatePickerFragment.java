@@ -69,8 +69,6 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
                                     dayString);
 
         dateField.setText(dateString);
-        dateField.clearFocus();
-
         descField.requestFocus();
     }
 

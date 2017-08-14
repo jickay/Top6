@@ -67,11 +67,6 @@ public class TaskFragment extends Fragment {
         super.onResume();
         setFullscreen(getActivity());
 
-        // Count number complete today
-        int doneToday = getCompletedToday(getContext());
-        MainActivity.setDoneToday(doneToday);
-        MainActivity.updateDoneToday();
-
         // Load new cursor to refresh view; Does not display any rows completed before
         Uri uri = TaskProvider.CONTENT_URI;
         String where = "CAST(" + TaskProvider.COLUMN_COMPLETION_BEFORE + " as TEXT) =?";
@@ -131,22 +126,4 @@ public class TaskFragment extends Fragment {
         }
     }
 
-    public int getCompletedToday(Context context) {
-        // Get all tasks complete today
-        Uri allCompleted = TaskProvider.CONTENT_URI;
-        String where = "CAST(" + TaskProvider.COLUMN_COMPLETION_TODAY + " as TEXT) =?";
-        String[] filter = new String[]{"1"};
-        String sortOrder = TaskProvider.COLUMN_DATE + " ASC";
-        Cursor cursor = new CursorLoader(context, allCompleted, null, where, filter, sortOrder).loadInBackground();
-
-        // Count number in list
-        int count = 0;
-        if (cursor.moveToFirst()) {
-            do {
-                count++;
-            } while (cursor.moveToNext());
-        }
-
-        return count;
-    }
 }

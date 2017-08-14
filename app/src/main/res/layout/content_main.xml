@@ -47,14 +47,13 @@
             android:orientation="horizontal"
             android:weightSum="3"
             android:layout_weight="1"
-            android:gravity="left|center">
+            android:gravity="center">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="right"
-                android:text="Today"
+                android:gravity="end"
+                android:text="@string/today"
                 android:textSize="18sp"
                 android:textColor="@color/colorPrimary"/>
 
@@ -62,10 +61,11 @@
                 android:id="@+id/done_today"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:gravity="center"
+                android:layout_marginLeft="16dp"
+                android:layout_marginStart="16dp"
                 android:text="0"
-                android:textSize="24sp"
+                android:textSize="30sp"
                 android:textColor="@color/colorPrimary"/>
 
         </LinearLayout>
@@ -74,15 +74,14 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:orientation="horizontal"
-            android:gravity="center|left"
+            android:gravity="center"
             android:layout_weight="1">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="right"
-                android:text="Yesterday"
+                android:gravity="end"
+                android:text="@string/yesterday"
                 android:textSize="18sp"
                 android:textColor="@color/colorPrimary"/>
 
@@ -90,10 +89,11 @@
                 android:id="@+id/done_yesterday"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:gravity="center"
+                android:layout_marginLeft="16dp"
+                android:layout_marginStart="16dp"
                 android:text="0"
-                android:textSize="24sp"
+                android:textSize="30sp"
                 android:textColor="@color/colorPrimary"/>
 
         </LinearLayout>
