@@ -23,6 +23,7 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.example.jickay.top6.fragment.TaskFragment;
 import com.example.jickay.top6.provider.TaskProvider;
 
 import java.util.Calendar;
@@ -43,6 +44,7 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
     private int BLACK_TEXT = R.color.cardview_dark_background;
 
     private Context context;
+    private TaskFragment fragment;
     private Cursor cursor;
     private int currentId;
     private String listType;
@@ -53,7 +55,8 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
     private SharedPreferences sharedPref;
     private SharedPreferences.Editor prefEditor;
 
-    public TaskRecyclerAdapter(Context c, String type) {
+    public TaskRecyclerAdapter(TaskFragment f, Context c, String type) {
+        fragment = f;
         context = c;
         listType = type;
     }
@@ -131,7 +134,12 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
         setEditCardListener(viewHolder.edit_button, i);
 
         // Set delay listener to push back task date
-        setDelayCardListener(viewHolder, viewHolder.delay_button, i, currentId);
+        if (fragment != null) {
+            setDelayCardListener(viewHolder, viewHolder.delay_button, i, currentId);
+        } else {
+            viewHolder.delay_button.setVisibility(View.GONE);
+            viewHolder.delay_button.setEnabled(false);
+        }
 
         // Set completion listener for task_num view
         setCompletionListener(parent, viewHolder, viewHolder.complete_button, taskNumView, dateString, taskPos, title, importanceColor, i);
@@ -222,29 +230,7 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
                         .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int id) {
-                                // Get value from number picker
-                                int daysToDelay = picker.getValue();
-                                // Check max day of month
-                                Calendar c = new GregorianCalendar(year,month,day);
-                                int daysInMonth = c.getActualMaximum(Calendar.DAY_OF_MONTH);
-                                // Set new day value and adjust if exceeds current month
-                                int finalDay = day + daysToDelay;
-                                if (finalDay > daysInMonth) {
-                                    finalDay -= daysInMonth;
-                                    month += 1;
-                                }
-                                // Change values back to string
-                                String newDateData = Integer.toString(year) + "-" +
-                                        Integer.toString(month) + "-" +
-                                        Integer.toString(finalDay);
-                                Log.i("DelayTask","Old date is " + dateData + ", new date is " + newDateData);
-                                // Store new date string into db
-                                Uri delayDate = ContentUris.withAppendedId(TaskProvider.CONTENT_URI, currentId);
-                                ContentValues values = new ContentValues();
-                                values.put(TaskProvider.COLUMN_DATE, newDateData);
-                                context.getContentResolver().update(delayDate, values, null, null);
-                                // Display new date on card
-                                viewHolder.task_date.setText(formatDate(newDateData));
+                                delayTaskFunction(viewHolder,picker,year,month,day,dateData);
                             }
                         })
                         .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
@@ -257,6 +243,36 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
                 builder.create().show();
             }
         });
+    }
+
+    private void delayTaskFunction(ViewHolder viewHolder, NumberPicker picker,
+                                   int year, int month, int day,
+                                   String dateData) {
+        // Get value from number picker
+        int daysToDelay = picker.getValue();
+        // Check max day of month
+        Calendar c = new GregorianCalendar(year,month,day);
+        int daysInMonth = c.getActualMaximum(Calendar.DAY_OF_MONTH);
+        // Set new day value and adjust if exceeds current month
+        int finalDay = day + daysToDelay;
+        if (finalDay > daysInMonth) {
+            finalDay -= daysInMonth;
+            month += 1;
+        }
+        // Change values back to string
+        String newDateData = Integer.toString(year) + "-" +
+                Integer.toString(month) + "-" +
+                Integer.toString(finalDay);
+        Log.i("DelayTask","Old date is " + dateData + ", New date is " + dateData);
+        // Store new date string into db
+        Uri delayDate = ContentUris.withAppendedId(TaskProvider.CONTENT_URI, currentId);
+        ContentValues values = new ContentValues();
+        values.put(TaskProvider.COLUMN_DATE, newDateData);
+        context.getContentResolver().update(delayDate, values, null, null);
+
+        // Display new date on card
+        viewHolder.task_date.setText(formatDate(newDateData));
+        fragment.refreshCursor();
     }
 
     private void setCompletionListener(final ViewGroup parent, final ViewHolder viewHolder,

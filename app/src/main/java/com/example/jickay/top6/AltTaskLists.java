@@ -35,7 +35,7 @@ public class AltTaskLists extends AppCompatActivity {
         listType = getIntent().getStringExtra("ListType");
 
         // Set adapter for recycler view
-        adapter = new TaskRecyclerAdapter(this,listType);
+        adapter = new TaskRecyclerAdapter(null,this,listType);
         recView = (RecyclerView) findViewById(R.id.task_list_alt);
         empty = (TextView) findViewById(R.id.empty_message);
 

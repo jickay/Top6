@@ -47,7 +47,7 @@ public class TaskFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        adapter = new TaskRecyclerAdapter(getActivity(),"current");
+        adapter = new TaskRecyclerAdapter(this, getActivity(),"current");
     }
 
     @Override
@@ -92,6 +92,16 @@ public class TaskFragment extends Fragment {
             layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
             recView.setLayoutManager(layoutManager);
         }
+    }
+
+    public void refreshCursor() {
+        Uri uri = TaskProvider.CONTENT_URI;
+        String where = "CAST(" + TaskProvider.COLUMN_COMPLETION_BEFORE + " as TEXT) =?";
+        String[] filter = new String[] {"0"};
+        String sortOrder = TaskProvider.COLUMN_DATE + " ASC, " + TaskProvider.COLUMN_IMPORTANCE + " DESC";
+        cursor = new CursorLoader(getActivity(),uri,null,where,filter,sortOrder).loadInBackground();
+        cursor.moveToFirst();
+        adapter.swapCursor(cursor);
     }
 
     public static void setFullscreen(Activity activity) {
