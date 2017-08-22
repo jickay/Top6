@@ -36,6 +36,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private int LEADING_DAYS = 10;
 
     private static int doneToday = 0;
+    private static int doneYesterday = 0;
 
     private static SharedPreferences sharedPref;
     private SharedPreferences.Editor prefEditor;
@@ -49,6 +50,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     // Getter methods
     public static int getDoneToday() { return doneToday; }
+    public static int getDoneYesterday() { return doneYesterday; }
     public static ArrayList<Task> getIncompleteTasks() { return incompleteTasks; }
     public static ArrayList<Task> getCompletedTasks() { return completedTasks; }
     public static ArrayList<Task> getDeletedTasks() { return deletedTasks; }
@@ -276,6 +278,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private void moveTodayCountToYesterday() {
         int number = sharedPref.getInt(getString(R.string.done_today), 0);
+        doneYesterday = number;
         prefEditor.putInt(getString(R.string.done_yesterday), number);
         prefEditor.putInt(getString(R.string.done_today),0);
         prefEditor.commit();

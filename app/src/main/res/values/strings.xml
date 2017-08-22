@@ -121,7 +121,7 @@
     <string name="empty_completed">No completed tasks yet.\nGo back and finish some!</string>
     <string name="today">Today</string>
     <string name="yesterday">Yesterday</string>
-    <string name="done_today">doneToday</string>
+    <string name="done_today">DoneToday</string>
     <string name="delay_task">Delay Task</string>
     <string name="ok">Ok</string>
     <string name="cancel">Cancel</string>

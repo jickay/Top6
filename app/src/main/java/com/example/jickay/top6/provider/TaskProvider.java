@@ -147,6 +147,7 @@ public class TaskProvider extends ContentProvider {
             getContext().getContentResolver().notifyChange(uri, null);
         }
 
+
         return count;
     }
 

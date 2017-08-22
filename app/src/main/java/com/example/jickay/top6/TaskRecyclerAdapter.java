@@ -2,6 +2,7 @@ package com.example.jickay.top6;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.appwidget.AppWidgetManager;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
@@ -55,6 +56,8 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
     private SharedPreferences sharedPref;
     private SharedPreferences.Editor prefEditor;
 
+    private AppWidgetManager widgetManager;
+
     public TaskRecyclerAdapter(TaskFragment f, Context c, String type) {
         fragment = f;
         context = c;
@@ -96,6 +99,7 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
                 .inflate(R.layout.task_card,parent,false);
         this.parent = parent;
         mainActivity = new MainActivity();
+        widgetManager = AppWidgetManager.getInstance(context);
 
         return new ViewHolder(card);
     }
@@ -287,7 +291,7 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
                 cursor.moveToPosition(i);
                 currentId = cursor.getInt(cursor.getColumnIndex(TaskProvider.COLUMN_TASKID));
 
-                int doneToday = mainActivity.getDoneToday();
+                int doneToday = MainActivity.getDoneToday();
                 if (textView.getText() != "\u2714") {
                     setCardColors(viewHolder,"\u2714",GREEN_BACKGROUND,GREEN_BACKGROUND,WHITE_TEXT,GREEN_BACKGROUND);
                     viewHolder.task_title.setText(title);
@@ -305,7 +309,6 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
                 } else {
                     setCardColors(viewHolder,taskPos,importanceColor,WHITE_BACKGROUND,BLACK_TEXT,importanceColor);
                     checkOverdue(viewHolder, dateString, taskPos, title);
-                    viewHolder.task_title.setText(title);
 
                     // Update row in database
                     setCompletionValues(currentId,false);
@@ -341,7 +344,7 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
         mySnackbar.show();
     }
 
-    private void setCompletionValues(int currentId, boolean completed) {
+    public void setCompletionValues(int currentId, boolean completed) {
         ContentValues values = new ContentValues();
         switch (listType) {
             case "current":
@@ -406,6 +409,7 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
         int progress = getUrgency(dateString);
         if (progress >= 0) {
             viewHolder.bar.setProgress(progress);
+            viewHolder.task_title.setText(title);
         } else {
             viewHolder.bar.setProgress(100);
             setCardColors(viewHolder, taskPos, RED_BACKGROUND, RED_BACKGROUND, WHITE_TEXT, RED_BACKGROUND);

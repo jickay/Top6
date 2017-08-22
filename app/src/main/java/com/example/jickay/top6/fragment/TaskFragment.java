@@ -3,6 +3,7 @@ package com.example.jickay.top6.fragment;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
+import android.appwidget.AppWidgetManager;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
@@ -41,6 +42,8 @@ public class TaskFragment extends Fragment {
     TaskRecyclerAdapter adapter;
     Cursor cursor;
     TextView empty;
+
+    AppWidgetManager widgetManager;
 
     public TaskFragment() {}
 
