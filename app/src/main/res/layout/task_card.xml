@@ -43,7 +43,7 @@
                     android:id="@+id/card_left"
                     android:layout_width="48dp"
                     android:layout_height="match_parent"
-                    android:orientation="vertical">
+                    android:orientation="vertical" >
 
                     <TextView
                         android:id="@+id/task_num"
@@ -143,7 +143,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
-                        android:padding="7dp"
+                        android:padding="5dp"
                         android:layout_marginBottom="0.5dp"
                         android:clickable="true"
                         android:background="@color/colorPrimaryLight"
@@ -155,7 +155,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
-                        android:padding="6dp"
+                        android:padding="4dp"
                         android:layout_marginBottom="0.5dp"
                         android:clickable="true"
                         android:background="@color/colorPrimaryLight"
@@ -167,7 +167,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
-                        android:padding="4dp"
+                        android:padding="3dp"
                         android:clickable="true"
                         android:background="@color/colorPrimaryLight"
                         android:tint="@color/colorPrimaryMed"

@@ -3,12 +3,14 @@ package com.example.jickay.top6.provider;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
+import android.util.Log;
 import android.widget.LinearLayout;
 import android.widget.RemoteViews;
 
@@ -27,6 +29,8 @@ public class AppWidget extends AppWidgetProvider {
 
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
+        super.onUpdate(context, appWidgetManager, appWidgetIds);
+        Log.i("AppWidget","onUpdate called");
 
         for (int i = 0; i < appWidgetIds.length; i++) {
 
@@ -49,17 +53,22 @@ public class AppWidget extends AppWidgetProvider {
             appWidgetManager.updateAppWidget(appWidgetIds[i], rv);
         }
 
-        super.onUpdate(context, appWidgetManager, appWidgetIds);
+        appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetIds,R.id.widget_listview);
     }
 
     @Override
     public void onReceive(Context context, Intent intent) {
         super.onReceive(context, intent);
+        Log.i("AppWidget","onReceive called");
 
         AppWidgetManager mgr = AppWidgetManager.getInstance(context);
-        if (intent.getAction().equals(ONCLICK_COMPLETE)) {
-            int id = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
-
+        if (intent.getAction().equals("android.appwidget.action.APPWIDGET_UPDATE")) {
+            Log.i("AppWidget","Intent received");
+            RemoteViews remoteView = new RemoteViews(context.getPackageName(),R.layout.app_widget);
+            ComponentName component = new ComponentName(context,ListWidgetService.class);
+            int appWidgetIds[] = mgr.getAppWidgetIds(new ComponentName(context, ListWidgetService.class));
+            mgr.notifyAppWidgetViewDataChanged(appWidgetIds, R.id.widget_listview);
+            mgr.updateAppWidget(component, remoteView);
         }
     }
 

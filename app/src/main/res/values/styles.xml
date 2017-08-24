@@ -46,6 +46,9 @@
         <item name="android:textColorSecondary">@color/colorPrimaryMed</item>
     </style>
 
-
+    <style name="AlertDialogCustom">
+        <item name="android:background">@color/cardview_dark_background</item>
+        <item name="android:textColor">@color/cardview_light_background</item>
+    </style>
 
 </resources>

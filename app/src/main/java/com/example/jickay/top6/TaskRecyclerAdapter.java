@@ -13,6 +13,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.view.ContextThemeWrapper;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -99,7 +100,6 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
                 .inflate(R.layout.task_card,parent,false);
         this.parent = parent;
         mainActivity = new MainActivity();
-        widgetManager = AppWidgetManager.getInstance(context);
 
         return new ViewHolder(card);
     }
@@ -209,7 +209,7 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
             @Override
             public void onClick(View view) {
                 // Build and inflate view with picker
-                AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(context, R.style.AlertDialogCustom));
                 LayoutInflater li = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                 View pickerView = li.inflate(R.layout.number_picker, null);
                 final NumberPicker picker = (NumberPicker) pickerView.findViewById(R.id.day_picker);
@@ -234,7 +234,7 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
                         .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int id) {
-                                delayTaskFunction(viewHolder,picker,year,month,day,dateData);
+                                delayTaskFunction(viewHolder,picker,year,month,day,dateData,currentId);
                             }
                         })
                         .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
@@ -251,7 +251,7 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
 
     private void delayTaskFunction(ViewHolder viewHolder, NumberPicker picker,
                                    int year, int month, int day,
-                                   String dateData) {
+                                   String dateData, long currentId) {
         // Get value from number picker
         int daysToDelay = picker.getValue();
         // Check max day of month
@@ -267,7 +267,7 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
         String newDateData = Integer.toString(year) + "-" +
                 Integer.toString(month) + "-" +
                 Integer.toString(finalDay);
-        Log.i("DelayTask","Old date is " + dateData + ", New date is " + dateData);
+        Log.i("DelayTask","Old date is " + dateData + ", New date is " + newDateData);
         // Store new date string into db
         Uri delayDate = ContentUris.withAppendedId(TaskProvider.CONTENT_URI, currentId);
         ContentValues values = new ContentValues();
@@ -277,6 +277,10 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
         // Display new date on card
         viewHolder.task_date.setText(formatDate(newDateData));
         fragment.refreshCursor();
+
+        // Snackbar notification of delay changes
+        Activity activity = (Activity) parent.getContext();
+        Snackbar.make(activity.findViewById(R.id.main_activity),"Task has been delayed by " + daysToDelay + " days",Snackbar.LENGTH_SHORT).show();
     }
 
     private void setCompletionListener(final ViewGroup parent, final ViewHolder viewHolder,

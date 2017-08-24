@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <!--Top of widget-->
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
@@ -70,12 +71,16 @@
 
     </LinearLayout>
 
+    <!--Body of widget-->
     <ListView
         android:id="@+id/widget_listview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:paddingBottom="6dp"
+        android:divider="@color/cardview_dark_background"
         android:headerDividersEnabled="false"
-        android:footerDividersEnabled="false"/>
+        android:footerDividersEnabled="false"
+        android:background="@color/cardview_dark_background"/>
 
     <TextView
         android:id="@+id/widget_empty"

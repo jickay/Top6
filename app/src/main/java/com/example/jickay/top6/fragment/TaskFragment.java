@@ -4,9 +4,11 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
 import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
@@ -17,20 +19,24 @@ import android.support.v4.content.CursorLoader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.RelativeLayout;
+import android.widget.RemoteViews;
 import android.widget.TextView;
 
 import com.example.jickay.top6.MainActivity;
 import com.example.jickay.top6.R;
 import com.example.jickay.top6.Task;
 import com.example.jickay.top6.TaskRecyclerAdapter;
+import com.example.jickay.top6.provider.ListWidgetService;
 import com.example.jickay.top6.provider.TaskProvider;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by user on 7/2/2017.
@@ -71,13 +77,11 @@ public class TaskFragment extends Fragment {
         setFullscreen(getActivity());
 
         // Load new cursor to refresh view; Does not display any rows completed before
-        Uri uri = TaskProvider.CONTENT_URI;
-        String where = "CAST(" + TaskProvider.COLUMN_COMPLETION_BEFORE + " as TEXT) =?";
-        String[] filter = new String[] {"0"};
-        String sortOrder = TaskProvider.COLUMN_DATE + " ASC, " + TaskProvider.COLUMN_IMPORTANCE + " DESC";
-        cursor = new CursorLoader(getActivity(),uri,null,where,filter,sortOrder).loadInBackground();
-        cursor.moveToFirst();
-        adapter.swapCursor(cursor);
+        Intent intent = new Intent(getContext(), ListWidgetService.class);
+        intent.setAction("android.appwidget.action.APPWIDGET_UPDATE");
+        getContext().sendBroadcast(intent);
+        Log.i("Fragment","Broadcast intent to widget provider");
+        refreshCursor();
 
         // Show starting instructions if no tasks
         if (!cursor.moveToFirst()) {
@@ -95,6 +99,11 @@ public class TaskFragment extends Fragment {
             layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
             recView.setLayoutManager(layoutManager);
         }
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
     }
 
     public void refreshCursor() {

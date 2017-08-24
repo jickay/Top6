@@ -5,7 +5,13 @@
     android:id="@+id/widget_listitem"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/colorPrimary">
+    android:paddingLeft="6dp"
+    android:paddingStart="6dp"
+    android:paddingRight="6dp"
+    android:paddingEnd="6dp"
+    android:paddingTop="4dp"
+    android:paddingBottom="2dp"
+    android:background="@color/cardview_dark_background">
 
     <TextView
         android:id="@+id/widget_task_num"
@@ -24,10 +30,12 @@
         android:layout_height="match_parent"
         android:layout_weight="6"
         android:padding="8dp"
+        android:paddingTop="4dp"
         android:gravity="center|start"
         android:text="title"
         android:textSize="16sp"
-        android:textColor="@color/cardview_dark_background" />
+        android:textColor="@color/cardview_dark_background"
+        android:background="@color/colorPrimary"/>
 
     <!--<ImageView-->
         <!--android:id="@+id/widget_complete_button"-->

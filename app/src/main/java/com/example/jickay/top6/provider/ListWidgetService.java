@@ -80,6 +80,8 @@ class ListRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
         String doneToday = Integer.toString(MainActivity.getDoneToday());
         String doneYesterday = Integer.toString(MainActivity.getDoneYesterday());
 
+        items.add(title);
+
         int importance = cursor.getInt(cursor.getColumnIndex(TaskProvider.COLUMN_IMPORTANCE));
         int importanceColor = getImportanceColor(importance);
 
@@ -88,7 +90,7 @@ class ListRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
         view.setTextViewText(R.id.done_yesterday,doneYesterday);
         view.setInt(R.id.widget_task_num,"setBackgroundColor", ContextCompat.getColor(context,importanceColor));
         view.setTextViewText(R.id.widget_task_num,Integer.toString(i+1));
-        view.setTextViewText(R.id.widget_title,title);
+        view.setTextViewText(R.id.widget_title,items.get(i));
         Log.i("Widget","Text at position " + i + " is " + title);
         return view;
     }
@@ -100,7 +102,13 @@ class ListRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
 
     @Override
     public void onDataSetChanged() {
-
+        Log.i("Widget","Data set changed initiated");
+        cursor.moveToFirst();
+        items.clear();
+        do {
+            String title = cursor.getString(cursor.getColumnIndex(TaskProvider.COLUMN_TITLE));
+            items.add(title);
+        } while (cursor.moveToNext());
     }
 
     @Override
