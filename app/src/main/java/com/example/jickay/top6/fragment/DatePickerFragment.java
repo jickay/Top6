@@ -67,6 +67,7 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
         CreateEditTask.setDateData(Integer.toString(year) + "-" +
                                     Integer.toString(month) + "-" +
                                     dayString);
+        CreateEditTask.setCalendar(year,month,day);
 
         dateField.setText(dateString);
         descField.requestFocus();

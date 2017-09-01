@@ -146,7 +146,7 @@
                         android:padding="5dp"
                         android:layout_marginBottom="0.5dp"
                         android:clickable="true"
-                        android:background="@color/colorPrimaryLight"
+                        android:background="?attr/selectableItemBackgroundBorderless"
                         android:tint="@color/colorPrimaryMed"
                         app:srcCompat="@android:drawable/ic_menu_edit" />
 
@@ -158,7 +158,7 @@
                         android:padding="4dp"
                         android:layout_marginBottom="0.5dp"
                         android:clickable="true"
-                        android:background="@color/colorPrimaryLight"
+                        android:background="?attr/selectableItemBackgroundBorderless"
                         android:tint="@color/colorPrimaryMed"
                         app:srcCompat="@drawable/ic_access_time_black_24dp" />
 
@@ -169,7 +169,7 @@
                         android:layout_weight="1"
                         android:padding="3dp"
                         android:clickable="true"
-                        android:background="@color/colorPrimaryLight"
+                        android:background="?attr/selectableItemBackgroundBorderless"
                         android:tint="@color/colorPrimaryMed"
                         app:srcCompat="@drawable/ic_done_black_24dp" />
 

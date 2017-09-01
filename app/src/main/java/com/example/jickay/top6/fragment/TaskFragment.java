@@ -32,10 +32,12 @@ import com.example.jickay.top6.MainActivity;
 import com.example.jickay.top6.R;
 import com.example.jickay.top6.Task;
 import com.example.jickay.top6.TaskRecyclerAdapter;
+import com.example.jickay.top6.notifications.ReminderManager;
 import com.example.jickay.top6.provider.ListWidgetService;
 import com.example.jickay.top6.provider.TaskProvider;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -104,6 +106,9 @@ public class TaskFragment extends Fragment {
     @Override
     public void onStop() {
         super.onStop();
+        if (!cursor.moveToFirst()) {
+            ReminderManager.setReminder(getActivity(),"empty",0,"Go add some more when you're ready",Calendar.getInstance());
+        }
     }
 
     public void refreshCursor() {

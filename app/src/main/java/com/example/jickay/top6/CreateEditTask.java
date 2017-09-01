@@ -3,14 +3,19 @@ package com.example.jickay.top6;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.DialogFragment;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.content.ContentUris;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
+import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
@@ -27,12 +32,15 @@ import android.widget.RadioGroup;
 
 import com.example.jickay.top6.fragment.DatePickerFragment;
 import com.example.jickay.top6.fragment.TaskFragment;
+import com.example.jickay.top6.notifications.ReminderManager;
 import com.example.jickay.top6.provider.TaskProvider;
+
+import java.util.Calendar;
 
 
 public class CreateEditTask extends AppCompatActivity {
 
-    int LEADING_DAYS = 10;
+    int ALARM_DAYS_BEFORE = 1;
 
     private Cursor c;
 
@@ -41,10 +49,11 @@ public class CreateEditTask extends AppCompatActivity {
     private EditText desc;
 
     private String titleString;
-    private String dateString;
     private String descString;
 
     private static String dateData;
+    private static Calendar calendar;
+
     private RadioGroup importance;
     private int importanceValue = -1;
 
@@ -52,6 +61,14 @@ public class CreateEditTask extends AppCompatActivity {
     private FloatingActionButton cancelDelete;
 
     public static void setDateData(String data) { dateData = data; }
+    public static void setCalendar(int year, int month, int day) {
+        calendar.set(Calendar.YEAR,year);
+        calendar.set(Calendar.MONTH,month);
+        calendar.set(Calendar.DAY_OF_MONTH,day);
+        calendar.set(Calendar.HOUR_OF_DAY,0);
+        calendar.set(Calendar.MINUTE,0);
+        calendar.set(Calendar.SECOND,0);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,6 +117,9 @@ public class CreateEditTask extends AppCompatActivity {
                 importanceValue = setRadioValue(radioGroup.findViewById(i));
             }
         });
+
+        // Set current instance of calendar
+        calendar = Calendar.getInstance();
     }
 
     private void newTaskActivity() {
@@ -150,6 +170,7 @@ public class CreateEditTask extends AppCompatActivity {
 
         // Saving existing task edits
         save.setOnClickListener(new View.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
             @Override
             public void onClick(View view) {
                 if (intent.matches("edit")) {
@@ -225,6 +246,9 @@ public class CreateEditTask extends AppCompatActivity {
         long id = ContentUris.parseId(uri);
         Log.i("New task","New task inserted into db; id="+id);
 
+        // Set notification manager
+        ReminderManager.setReminder(this,"task",id,titleString,calendar);
+
         return id;
     }
 
@@ -244,6 +268,7 @@ public class CreateEditTask extends AppCompatActivity {
         setCheckedRadio(importance,c.getInt(c.getColumnIndex(TaskProvider.COLUMN_IMPORTANCE)));
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     private void saveTaskEdit(int id) {
         // Get text from EditTexts at save
         titleString = title.getText().toString();
@@ -262,6 +287,9 @@ public class CreateEditTask extends AppCompatActivity {
         if (count != 1) {
             throw new IllegalStateException("Unable to update id "+id);
         }
+
+        // Update notification
+        ReminderManager.setReminder(this,"task",id,titleString,calendar);
     }
 
     private void deleteTask(int id) {
@@ -269,6 +297,10 @@ public class CreateEditTask extends AppCompatActivity {
         Uri uri = ContentUris.withAppendedId(TaskProvider.CONTENT_URI,id);
         getContentResolver().delete(uri,null,null);
         Log.i("DeleteTask","Entry deleted: ID "+id);
+        // Cancel notification
+        NotificationManager mgr = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        mgr.cancel(id);
+        Log.i("DeleteTask","Cancel notification for task " + id);
     }
 
     private void showDatePickerDialog() {

@@ -57,8 +57,6 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
     private SharedPreferences sharedPref;
     private SharedPreferences.Editor prefEditor;
 
-    private AppWidgetManager widgetManager;
-
     public TaskRecyclerAdapter(TaskFragment f, Context c, String type) {
         fragment = f;
         context = c;
