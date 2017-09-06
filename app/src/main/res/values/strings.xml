@@ -125,5 +125,6 @@
     <string name="delay_task">Delay Task</string>
     <string name="ok">Ok</string>
     <string name="cancel">Cancel</string>
+    <string name="empty_notification_message">Go add some more when you\'re ready</string>
 
 </resources>

@@ -33,13 +33,11 @@ import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
 
-    private int LEADING_DAYS = 10;
-
     private static int doneToday = 0;
     private static int doneYesterday = 0;
 
     private static SharedPreferences sharedPref;
-    private SharedPreferences.Editor prefEditor;
+    private static SharedPreferences.Editor prefEditor;
 
     private static TextView done_today;
     private TextView done_yesterday;
@@ -56,7 +54,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public static ArrayList<Task> getDeletedTasks() { return deletedTasks; }
 
     // Setter methods
-    public static void setDoneToday(int number) { doneToday = number; }
+    public static void setDoneToday(int number) { doneToday = number; prefEditor.putInt("DoneToday",number).commit(); }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -233,9 +231,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             } while (cursor.moveToNext());
         }
 
-        prefEditor.putInt(getString(R.string.done_today), count);
-        prefEditor.commit();
-
+        prefEditor.putInt(getString(R.string.done_today), count).commit();
         doneToday = count;
     }
 
@@ -274,6 +270,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (number < 0) { number = 0; }
         String count = Integer.toString(number);
         done_yesterday.setText(count);
+        doneYesterday = number;
     }
 
     private void moveTodayCountToYesterday() {

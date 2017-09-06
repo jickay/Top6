@@ -22,10 +22,6 @@ import com.example.jickay.top6.R;
  */
 
 public class AppWidget extends AppWidgetProvider {
-    public static final String ONCLICK_COMPLETE = "com.example.jickay.Top6.TOAST_ACTION";
-    public static final String EXTRA_ITEM = "com.example.jickay.Top6.EXTRA_ITEM";
-
-    Cursor cursor;
 
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
@@ -40,15 +36,17 @@ public class AppWidget extends AppWidgetProvider {
 
             RemoteViews rv = new RemoteViews(context.getPackageName(), R.layout.app_widget);
 
+            String doneToday = Integer.toString(MainActivity.getDoneToday());
+            String doneYesterday = Integer.toString(MainActivity.getDoneYesterday());
+            rv.setTextViewText(R.id.done_today,doneToday);
+            rv.setTextViewText(R.id.done_yesterday,doneYesterday);
+
             rv.setRemoteAdapter(R.id.widget_listview, intent);
             rv.setEmptyView(R.id.widget_listview, R.id.widget_empty);
 
-//            Intent clickComplete = new Intent(context,ListWidgetService.class);
-//            clickComplete.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetIds[i]);
-//            clickComplete.setAction(ONCLICK_COMPLETE);
-//
-//            PendingIntent clickCompletePendingIntent = PendingIntent.getBroadcast(context, 0, clickComplete, PendingIntent.FLAG_UPDATE_CURRENT);
-//            rv.setOnClickPendingIntent(R.id.widget_complete_button, clickCompletePendingIntent);
+            Intent openApp = new Intent(context,MainActivity.class);
+            PendingIntent openAppPendingIntent = PendingIntent.getActivity(context, 0, openApp, PendingIntent.FLAG_UPDATE_CURRENT);
+            rv.setOnClickPendingIntent(R.id.widget_container, openAppPendingIntent);
 
             appWidgetManager.updateAppWidget(appWidgetIds[i], rv);
         }
@@ -61,8 +59,9 @@ public class AppWidget extends AppWidgetProvider {
         super.onReceive(context, intent);
         Log.i("AppWidget","onReceive called");
 
+        String action = intent.getAction();
         AppWidgetManager mgr = AppWidgetManager.getInstance(context);
-        if (intent.getAction().equals("android.appwidget.action.APPWIDGET_UPDATE")) {
+        if (action.equals("android.appwidget.action.APPWIDGET_UPDATE")) {
             Log.i("AppWidget","Intent received");
             RemoteViews remoteView = new RemoteViews(context.getPackageName(),R.layout.app_widget);
             ComponentName component = new ComponentName(context,ListWidgetService.class);

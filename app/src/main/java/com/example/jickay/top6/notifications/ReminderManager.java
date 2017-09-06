@@ -18,44 +18,84 @@ import java.util.Calendar;
 
 public class ReminderManager {
 
+    private static int ALARM_DAYS_BEFORE = 3;
+
+    private static Calendar thisCalendar;
+
     private ReminderManager() {}
 
-    public static void setReminder(Context context, String type, long taskId, String title, Calendar time) {
-
-        Log.i("ReminderManager","Alarm set to notify at " + time.getTime());
+    public static void setReminder(Context context, String type,
+                                   long taskId, String title, Calendar taskTime,
+                                   int color) {
 
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        thisCalendar = (Calendar) taskTime.clone();
+        int difference = getDifference();
+        Log.i("ReminderManager","Difference is " + difference);
+
         Intent intent = new Intent(context, OnAlarmReceiver.class);
+        PendingIntent pendingIntent;
+
         switch (type) {
-            case "task":
-                // Set early warning notification alarm
-                intent.setAction("Warning");
-                intent.putExtra(TaskProvider.COLUMN_TASKID, taskId);
-                intent.putExtra(TaskProvider.COLUMN_TITLE, title);
+            case "warning":
+                if (difference >= 0) {
+                    // Set early warning notification alarm
+                    intent.setAction("Warning");
+                    intent.putExtra(TaskProvider.COLUMN_TASKID, taskId);
+                    intent.putExtra(TaskProvider.COLUMN_TITLE, title);
+                    intent.putExtra(TaskProvider.COLUMN_IMPORTANCE, color);
+                    if (0 <= difference && difference <= ALARM_DAYS_BEFORE) {
+                        intent.putExtra("AlarmDaysBefore", difference);
+                        thisCalendar.set(Calendar.DAY_OF_MONTH, thisCalendar.get(Calendar.DAY_OF_MONTH) - difference);
+                    } else if (difference > ALARM_DAYS_BEFORE) {
+                        intent.putExtra("AlarmDaysBefore", ALARM_DAYS_BEFORE);
+                        thisCalendar.set(Calendar.DAY_OF_MONTH, thisCalendar.get(Calendar.DAY_OF_MONTH) - ALARM_DAYS_BEFORE);
+                    }
 
-                PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_ONE_SHOT);
-                alarmManager.set(AlarmManager.RTC, time.getTimeInMillis(), pendingIntent);
+                    pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_ONE_SHOT);
+                    alarmManager.set(AlarmManager.RTC, thisCalendar.getTimeInMillis(), pendingIntent);
 
-                // Set overdue notification alarm
-                intent.setAction("Overdue");
-                pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_ONE_SHOT);
+                    Log.i("SetAlarm", "Warning alarm set to " + thisCalendar.getTime().toString());
+                }
+                break;
+            case "overdue":
+                if (difference >= 0) {
+                    // Set overdue notification alarm
+                    intent.setAction("Overdue");
+                    intent.putExtra(TaskProvider.COLUMN_IMPORTANCE,color);
+                    pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_ONE_SHOT);
 
-                time.set(Calendar.DAY_OF_YEAR, time.get(Calendar.DAY_OF_YEAR) + 1); // Change time to day after set deadline
-                alarmManager.set(AlarmManager.RTC, time.getTimeInMillis(), pendingIntent);
+                    thisCalendar.set(Calendar.DAY_OF_YEAR, thisCalendar.get(Calendar.DAY_OF_YEAR) + 1); // Change thisCalendar to day after set deadline
+                    alarmManager.set(AlarmManager.RTC, thisCalendar.getTimeInMillis(), pendingIntent);
+
+                    Log.i("SetAlarm", "Overdue alarm set to " + thisCalendar.getTime().toString());
+                }
                 break;
             case "emtpy":
                 intent.setAction("Empty");
                 intent.putExtra(TaskProvider.COLUMN_TASKID, taskId);
                 intent.putExtra(TaskProvider.COLUMN_TITLE, title);
+                intent.putExtra(TaskProvider.COLUMN_IMPORTANCE,color);
 
-                // Set time of notification to next day after last use
-                time.set(Calendar.DAY_OF_YEAR,time.get(Calendar.DAY_OF_YEAR)+1);
-                time.set(Calendar.HOUR_OF_DAY,0);
-                time.set(Calendar.MINUTE,0);
-                time.set(Calendar.SECOND,0);
+                // Set thisCalendar of notification to next day after last use
+                thisCalendar.set(Calendar.DAY_OF_YEAR,thisCalendar.get(Calendar.DAY_OF_YEAR)+1);
+                thisCalendar.set(Calendar.HOUR_OF_DAY,0);
+                thisCalendar.set(Calendar.MINUTE,0);
+                thisCalendar.set(Calendar.SECOND,0);
 
                 pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_ONE_SHOT);
-                alarmManager.set(AlarmManager.RTC, time.getTimeInMillis(), pendingIntent);
+                alarmManager.set(AlarmManager.RTC, thisCalendar.getTimeInMillis(), pendingIntent);
+
+                Log.i("SetAlarm","Empty alarm set to " + thisCalendar.getTime().toString());
+                break;
         }
+    }
+
+    private static int getDifference() {
+        Calendar c = Calendar.getInstance();
+        int today = c.get(Calendar.DAY_OF_YEAR);
+        int taskDay = thisCalendar.get(Calendar.DAY_OF_YEAR);
+
+        return taskDay - today;
     }
 }

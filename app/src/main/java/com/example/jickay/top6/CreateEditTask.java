@@ -3,7 +3,6 @@ package com.example.jickay.top6;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.DialogFragment;
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -40,8 +39,6 @@ import java.util.Calendar;
 
 public class CreateEditTask extends AppCompatActivity {
 
-    int ALARM_DAYS_BEFORE = 1;
-
     private Cursor c;
 
     private EditText title;
@@ -52,7 +49,8 @@ public class CreateEditTask extends AppCompatActivity {
     private String descString;
 
     private static String dateData;
-    private static Calendar calendar;
+    private static Calendar taskTime;
+    private static int importanceColor;
 
     private RadioGroup importance;
     private int importanceValue = -1;
@@ -62,12 +60,13 @@ public class CreateEditTask extends AppCompatActivity {
 
     public static void setDateData(String data) { dateData = data; }
     public static void setCalendar(int year, int month, int day) {
-        calendar.set(Calendar.YEAR,year);
-        calendar.set(Calendar.MONTH,month);
-        calendar.set(Calendar.DAY_OF_MONTH,day);
-        calendar.set(Calendar.HOUR_OF_DAY,0);
-        calendar.set(Calendar.MINUTE,0);
-        calendar.set(Calendar.SECOND,0);
+        taskTime.set(Calendar.YEAR,year);
+        taskTime.set(Calendar.MONTH,month);
+        taskTime.set(Calendar.DAY_OF_MONTH,day);
+        taskTime.set(Calendar.HOUR_OF_DAY,0);
+        taskTime.set(Calendar.MINUTE,0);
+        taskTime.set(Calendar.SECOND,0);
+        Log.i("SetCalendar", taskTime.getTime().toString());
     }
 
     @Override
@@ -86,6 +85,9 @@ public class CreateEditTask extends AppCompatActivity {
 
         save = (FloatingActionButton) findViewById(R.id.save_task);
         cancelDelete = (FloatingActionButton) findViewById(R.id.cancel_delete_task);
+
+        // Set current instance of taskTime
+        taskTime = Calendar.getInstance();
 
         // Get intent type and use corresponding create or edit code
         final String intentType = getIntent().getStringExtra("Intent");
@@ -117,9 +119,6 @@ public class CreateEditTask extends AppCompatActivity {
                 importanceValue = setRadioValue(radioGroup.findViewById(i));
             }
         });
-
-        // Set current instance of calendar
-        calendar = Calendar.getInstance();
     }
 
     private void newTaskActivity() {
@@ -247,7 +246,8 @@ public class CreateEditTask extends AppCompatActivity {
         Log.i("New task","New task inserted into db; id="+id);
 
         // Set notification manager
-        ReminderManager.setReminder(this,"task",id,titleString,calendar);
+        ReminderManager.setReminder(this,"warning",id,titleString, taskTime, importanceColor);
+        ReminderManager.setReminder(this,"overdue",id,titleString, taskTime, R.color.colorOverdue);
 
         return id;
     }
@@ -266,6 +266,12 @@ public class CreateEditTask extends AppCompatActivity {
                 c.getString(c.getColumnIndex(TaskProvider.COLUMN_DATE))));
         desc.setText(c.getString(c.getColumnIndex(TaskProvider.COLUMN_DESCRIPTION)));
         setCheckedRadio(importance,c.getInt(c.getColumnIndex(TaskProvider.COLUMN_IMPORTANCE)));
+
+        // Set taskTime object to match task date
+        setCalendar(Integer.parseInt(dateData.split("-")[0]),
+                Integer.parseInt(dateData.split("-")[1]),
+                Integer.parseInt(dateData.split("-")[2]));
+        Log.i("FillTask","Calendar set to " + taskTime.getTime().toString());
     }
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
@@ -289,7 +295,8 @@ public class CreateEditTask extends AppCompatActivity {
         }
 
         // Update notification
-        ReminderManager.setReminder(this,"task",id,titleString,calendar);
+        ReminderManager.setReminder(this,"warning",id,titleString, taskTime, importanceColor);
+        ReminderManager.setReminder(this,"overdue",id,titleString, taskTime, R.color.colorOverdue);
     }
 
     private void deleteTask(int id) {
@@ -318,16 +325,13 @@ public class CreateEditTask extends AppCompatActivity {
             // Check which radio button was clicked
             switch(view.getId()) {
                 case R.id.importance1:
-                    if (checked)
-                        value = 1;
+                    if (checked) { value = 1; importanceColor = R.color.importance_low; }
                     break;
                 case R.id.importance2:
-                    if (checked)
-                        value = 2;
+                    if (checked) { value = 2; importanceColor = R.color.importance_med; }
                     break;
                 case R.id.importance3:
-                    if (checked)
-                        value = 3;
+                    if (checked) { value = 3; importanceColor = R.color.importance_high; }
                     break;
                 default: value = -1; break;
             }
@@ -339,11 +343,11 @@ public class CreateEditTask extends AppCompatActivity {
     private void setCheckedRadio(RadioGroup radioGroup,int importance) {
         switch (importance) {
             case 1: ((RadioButton)radioGroup.findViewById(R.id.importance1)).setChecked(true);
-                importanceValue = 1; break;
+                importanceValue = 1; importanceColor = R.color.importance_low; break;
             case 2: ((RadioButton)radioGroup.findViewById(R.id.importance2)).setChecked(true);
-                importanceValue = 2; break;
+                importanceValue = 2; importanceColor = R.color.importance_med; break;
             case 3: ((RadioButton)radioGroup.findViewById(R.id.importance3)).setChecked(true);
-                importanceValue = 3; break;
+                importanceValue = 3; importanceColor = R.color.importance_high; break;
         }
     }
 

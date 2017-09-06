@@ -130,7 +130,7 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
         viewHolder.task_desc.setText(description);
 
         // Set initial completion for each card
-        setInitialCompletion(viewHolder,completion_today,completion_before,taskPos,dateString,title,importanceColor);
+        setInitialCompletion(viewHolder,completion_today,completion_before,taskPos,date,title,importanceColor);
 
         // Set button listener to edit task card
         setEditCardListener(viewHolder.edit_button, i);
@@ -144,7 +144,7 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
         }
 
         // Set completion listener for task_num view
-        setCompletionListener(parent, viewHolder, viewHolder.complete_button, taskNumView, dateString, taskPos, title, importanceColor, i);
+        setCompletionListener(parent, viewHolder, viewHolder.complete_button, taskNumView, date, taskPos, title, importanceColor, i);
     }
 
     @Override
@@ -262,10 +262,12 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
             month += 1;
         }
         // Change values back to string
+        String dayString = finalDay < 10 ? "0" + Integer.toString(finalDay) : Integer.toString(finalDay);
         String newDateData = Integer.toString(year) + "-" +
                 Integer.toString(month) + "-" +
-                Integer.toString(finalDay);
+                dayString;
         Log.i("DelayTask","Old date is " + dateData + ", New date is " + newDateData);
+
         // Store new date string into db
         Uri delayDate = ContentUris.withAppendedId(TaskProvider.CONTENT_URI, currentId);
         ContentValues values = new ContentValues();
@@ -283,12 +285,13 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
 
     private void setCompletionListener(final ViewGroup parent, final ViewHolder viewHolder,
                                        final ImageView complete_button, final TextView textView,
-                                       final String dateString, final String taskPos, final String title,
+                                       final String date, final String taskPos, final String title,
                                        final int importanceColor, final int i) {
         // Toggle completion when number is clicked
         complete_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                String dateString = formatDate(date);
                 // Set cursor to appropriate row
                 cursor.moveToPosition(i);
                 currentId = cursor.getInt(cursor.getColumnIndex(TaskProvider.COLUMN_TASKID));
@@ -310,7 +313,7 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
                     completeSnackbar(parent,viewHolder,currentId,dateString,taskPos,title,importanceColor);
                 } else {
                     setCardColors(viewHolder,taskPos,importanceColor,WHITE_BACKGROUND,BLACK_TEXT,importanceColor);
-                    checkOverdue(viewHolder, dateString, taskPos, title);
+                    checkOverdue(viewHolder, date, taskPos, title);
 
                     // Update row in database
                     setCompletionValues(currentId,false);
@@ -412,10 +415,20 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
         if (progress >= 0) {
             viewHolder.bar.setProgress(progress);
             viewHolder.task_title.setText(title);
+            // Update db to mark task as not overdue
+            Uri overdue = ContentUris.withAppendedId(TaskProvider.CONTENT_URI, currentId);
+            ContentValues values = new ContentValues();
+            values.put(TaskProvider.COLUMN_OVERDUE, 0);
+            context.getContentResolver().update(overdue, values, null, null);
         } else {
             viewHolder.bar.setProgress(100);
             setCardColors(viewHolder, taskPos, RED_BACKGROUND, RED_BACKGROUND, WHITE_TEXT, RED_BACKGROUND);
             viewHolder.task_title.setText("OVERDUE: " + title);
+            // Update db to mark task as overdue
+            Uri overdue = ContentUris.withAppendedId(TaskProvider.CONTENT_URI, currentId);
+            ContentValues values = new ContentValues();
+            values.put(TaskProvider.COLUMN_OVERDUE, 1);
+            context.getContentResolver().update(overdue, values, null, null);
         }
     }
 
@@ -423,33 +436,22 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
         int progressValue = 0;
 
         if (!date.isEmpty()) {
-            int taskDay = Integer.parseInt(date.split(" ")[1]);
-            int taskMonth = getTaskMonth(date.split(" ")[0]);
+            // Set up calendar objects for task and current date
+            Calendar taskCalendar = Calendar.getInstance();
+            taskCalendar.set(Calendar.YEAR,Integer.parseInt(date.split("-")[0]));
+            taskCalendar.set(Calendar.MONTH,Integer.parseInt(date.split("-")[1]));
+            taskCalendar.set(Calendar.DAY_OF_MONTH,Integer.parseInt(date.split("-")[2]));
+            int taskDayOfYear = taskCalendar.get(Calendar.DAY_OF_YEAR);
 
-            //Calculate value for progress bar
             Calendar c = Calendar.getInstance();
-            int currentMonth = c.get(Calendar.MONTH);
-            int currentDay = c.get(Calendar.DAY_OF_MONTH);
-            int daysInMonth = c.getActualMaximum(Calendar.DAY_OF_MONTH);
+            int currentDayOfYear = c.get(Calendar.DAY_OF_YEAR);
 
-            // Calculate number of days between current and task day
-            int difference = 0;
-            if (currentMonth < taskMonth) {
-                int daysLeftInMonth = daysInMonth - currentDay;
-                difference = taskDay + daysLeftInMonth;
-            } else if (currentMonth == taskMonth) {
-                difference = taskDay - currentDay;
-            }
-
-            int daysRemaining = 0;
-            if (0 <= daysRemaining && daysRemaining <= LEADING_DAYS) {
-                daysRemaining = LEADING_DAYS - difference;
-            }
-            Log.i("SettingUrgency","Difference is " + difference + ", daysRemaining is " + daysRemaining);
+            // Calculate different between task day and current day
+            int difference = taskDayOfYear - currentDayOfYear;
 
             //Set progress bar length
-            if (0 <= daysRemaining && daysRemaining <= LEADING_DAYS) {
-                progressValue = 100 / LEADING_DAYS * daysRemaining;
+            if (0 <= difference && difference <= LEADING_DAYS) {
+                progressValue = 100 / LEADING_DAYS * (LEADING_DAYS - difference);
             } else if (difference > LEADING_DAYS){
                 progressValue = 0;
             } else {
@@ -482,27 +484,6 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
         }
 
         return monthString + " " + day;
-    }
-
-    private static int getTaskMonth(String month) {
-        month = month.toLowerCase();
-        int monthInt;
-        switch (month) {
-            case "jan": monthInt = 0; break;
-            case "feb": monthInt = 1; break;
-            case "mar": monthInt = 2; break;
-            case "apr": monthInt = 3; break;
-            case "may": monthInt = 4; break;
-            case "jun": monthInt = 5; break;
-            case "jul": monthInt = 6; break;
-            case "aug": monthInt = 7; break;
-            case "sep": monthInt = 8; break;
-            case "oct": monthInt = 9; break;
-            case "nov": monthInt = 10; break;
-            case "dec": monthInt = 11; break;
-            default: monthInt = -1; break;
-        }
-        return monthInt;
     }
 
 }

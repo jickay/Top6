@@ -107,7 +107,7 @@ public class TaskFragment extends Fragment {
     public void onStop() {
         super.onStop();
         if (!cursor.moveToFirst()) {
-            ReminderManager.setReminder(getActivity(),"empty",0,"Go add some more when you're ready",Calendar.getInstance());
+            ReminderManager.setReminder(getActivity(),"empty",0,getString(R.string.empty_notification_message),Calendar.getInstance(),R.color.colorAccent);
         }
     }
 

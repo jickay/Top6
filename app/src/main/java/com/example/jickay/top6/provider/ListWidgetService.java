@@ -75,24 +75,34 @@ class ListRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
 
     @Override
     public RemoteViews getViewAt(int i) {
+        // Get db data
         cursor.moveToPosition(i);
         String title = cursor.getString(cursor.getColumnIndex(TaskProvider.COLUMN_TITLE));
-        String doneToday = Integer.toString(MainActivity.getDoneToday());
-        String doneYesterday = Integer.toString(MainActivity.getDoneYesterday());
-
+        int completion = cursor.getInt(cursor.getColumnIndex(TaskProvider.COLUMN_COMPLETION_TODAY));
+        int overdue = cursor.getInt(cursor.getColumnIndex(TaskProvider.COLUMN_OVERDUE));
+        // Store into local list
         items.add(title);
-
-        int importance = cursor.getInt(cursor.getColumnIndex(TaskProvider.COLUMN_IMPORTANCE));
-        int importanceColor = getImportanceColor(importance);
-
-        RemoteViews view = new RemoteViews(context.getPackageName(), R.layout.widget_item);
-        view.setTextViewText(R.id.done_today,doneToday);
-        view.setTextViewText(R.id.done_yesterday,doneYesterday);
-        view.setInt(R.id.widget_task_num,"setBackgroundColor", ContextCompat.getColor(context,importanceColor));
-        view.setTextViewText(R.id.widget_task_num,Integer.toString(i+1));
-        view.setTextViewText(R.id.widget_title,items.get(i));
+        // Set widget item colors and text
+        RemoteViews widgetItems = new RemoteViews(context.getPackageName(), R.layout.widget_item);
+        if (completion == 1) {
+            widgetItems.setInt(R.id.widget_task_num, "setBackgroundColor", ContextCompat.getColor(context, R.color.colorAccent));
+            widgetItems.setInt(R.id.widget_title, "setBackgroundColor", ContextCompat.getColor(context, R.color.colorAccent));
+            widgetItems.setInt(R.id.widget_title, "setTextColor", ContextCompat.getColor(context, R.color.cardview_light_background));
+        } else if (overdue == 0) {
+            int importance = cursor.getInt(cursor.getColumnIndex(TaskProvider.COLUMN_IMPORTANCE));
+            int importanceColor = getImportanceColor(importance);
+            widgetItems.setInt(R.id.widget_task_num, "setBackgroundColor", ContextCompat.getColor(context, importanceColor));
+            widgetItems.setInt(R.id.widget_title, "setBackgroundColor", ContextCompat.getColor(context, R.color.cardview_light_background));
+            widgetItems.setInt(R.id.widget_title, "setTextColor", ContextCompat.getColor(context, R.color.cardview_dark_background));
+        } else {
+            widgetItems.setInt(R.id.widget_task_num, "setBackgroundColor", ContextCompat.getColor(context, R.color.colorOverdue));
+            widgetItems.setInt(R.id.widget_title, "setBackgroundColor", ContextCompat.getColor(context, R.color.colorOverdue));
+            widgetItems.setInt(R.id.widget_title, "setTextColor", ContextCompat.getColor(context, R.color.cardview_light_background));
+        }
+        widgetItems.setTextViewText(R.id.widget_task_num,Integer.toString(i+1));
+        widgetItems.setTextViewText(R.id.widget_title,items.get(i));
         Log.i("Widget","Text at position " + i + " is " + title);
-        return view;
+        return widgetItems;
     }
 
     @Override
