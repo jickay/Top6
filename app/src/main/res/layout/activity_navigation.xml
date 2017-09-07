@@ -18,6 +18,10 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:layout_marginBottom="-100dp"
+        android:theme="@style/navDrawer"
+        android:background="@color/cardview_dark_background"
+        app:itemTextColor="@color/cardview_light_background"
+        app:itemIconTint="@color/cardview_light_background"
         app:headerLayout="@layout/nav_header_navigation"
         app:menu="@menu/activity_navigation_drawer" />
 

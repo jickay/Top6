@@ -1,19 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <group android:checkableBehavior="single">
-        <item
-            android:id="@+id/nav_all_tasks"
-            android:icon="@drawable/ic_format_list_numbered_black_24dp"
-            android:title="All Tasks" />
-        <item
-            android:id="@+id/nav_completed_tasks"
-            android:icon="@drawable/ic_format_list_bulleted_black_24dp"
-            android:title="Completed Tasks" />
-        <item
-            android:id="@+id/nav_settings"
-            android:icon="@drawable/ic_menu_manage"
-            android:title="Settings" />
-    </group>
+    <item android:title="Lists">
+        <menu android:id="@+id/nav_lists_group">
+            <group android:checkableBehavior="single">
+                <item
+                    android:id="@+id/nav_all_tasks"
+                    android:icon="@drawable/ic_format_list_numbered_black_24dp"
+                    android:title="All Tasks" />
+                <item
+                    android:id="@+id/nav_completed_tasks"
+                    android:icon="@drawable/ic_format_list_bulleted_black_24dp"
+                    android:title="Completed Tasks" />
+            </group>
+        </menu>
+    </item>
+
+    <item android:title="Settings">
+        <menu android:id="@+id/nav_settings_group">
+            <group android:checkableBehavior="single">
+                <item
+                    android:id="@+id/nav_settings"
+                    android:icon="@drawable/ic_menu_manage"
+                    android:title="Settings" />
+            </group>
+        </menu>
+    </item>
 
 </menu>

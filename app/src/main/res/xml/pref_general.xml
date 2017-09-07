@@ -1,38 +1,80 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
     <PreferenceCategory
-        android:title="General"
-        android:key="pref_key_general_settings">
+        android:title="Importance Colors"
+        android:key="pref_key_importance_settings"
+        android:summary="Set colors for each importance level given to a task">
+
+        <ListPreference
+            android:defaultValue="1"
+            android:key="importance_color_high"
+            android:title="High"
+            android:summary="Red"
+            android:entries="@array/importance_colors"
+            android:entryValues="@array/importance_colors_values" />
+
+        <ListPreference
+            android:defaultValue="2"
+            android:key="importance_color_med"
+            android:title="Medium"
+            android:summary="Orange"
+            android:entries="@array/importance_colors"
+            android:entryValues="@array/importance_colors_values" />
+
+        <ListPreference
+            android:defaultValue="3"
+            android:key="importance_color_low"
+            android:title="Low"
+            android:summary="Yellow"
+            android:entries="@array/importance_colors"
+            android:entryValues="@array/importance_colors_values" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="Notifications"
+        android:key="pref_key_notifications_settings">
 
         <SwitchPreference
             android:defaultValue="true"
-            android:key="example_switch"
-            android:summary="@string/pref_description_social_recommendations"
-            android:title="@string/pref_title_social_recommendations" />
+            android:key="warning_switch"
+            android:title="Early Warning"
+            android:summary="Warns at set number of days before deadline"/>
 
-        <!-- NOTE: EditTextPreference accepts EditText attributes. -->
-        <!-- NOTE: EditTextPreference's summary should be set to its value by the activity code. -->
-        <EditTextPreference
-            android:capitalize="words"
-            android:defaultValue="@string/pref_default_display_name"
-            android:inputType="textCapWords"
-            android:key="example_text"
-            android:maxLines="1"
-            android:selectAllOnFocus="true"
-            android:singleLine="true"
-            android:title="@string/pref_title_display_name" />
-
-        <!-- NOTE: Hide buttons to simplify the UI. Users can touch outside the dialog to
-             dismiss it. -->
-        <!-- NOTE: ListPreference's summary should be set to its value by the activity code. -->
         <ListPreference
-            android:defaultValue="-1"
-            android:entries="@array/pref_example_list_titles"
-            android:entryValues="@array/pref_example_list_values"
-            android:key="example_list"
+            android:defaultValue="3"
+            android:key="warning_days"
             android:negativeButtonText="@null"
             android:positiveButtonText="@null"
-            android:title="@string/pref_title_add_friends_to_messages" />
+            android:entries="@array/warning_notification_days"
+            android:entryValues="@array/warning_notification_values"
+            android:title="Early Warning: Number of Days" />
+
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="overdue_switch"
+            android:title="Overdue"
+            android:summary="Notifies when tasks are past the deadline"/>
+
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="overdue_sticky_switch"
+            android:title="Overdue: Make Sticky"
+            android:summary="Overdue notifications can only be removed by marking the task as complete."/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="Progress Bar"
+        android:key="pref_key_progress_settings">
+
+        <ListPreference
+            android:defaultValue="10"
+            android:key="progress_bar"
+            android:entries="@array/progress_days"
+            android:entryValues="@array/progress_values"
+            android:title="Max time to calculate its length"
+            android:summary="10 days"/>
 
     </PreferenceCategory>
 

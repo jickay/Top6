@@ -11,14 +11,16 @@
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/task_list_alt"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:paddingTop="8dp"
-        android:background="@color/cardview_dark_background"/>
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/cardview_dark_background"
+        android:fitsSystemWindows="false"
+        android:paddingBottom="8dp"
+        android:paddingTop="8dp" />
 
     <TextView
         android:id="@+id/empty_message"
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:layout_height="420dp"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"

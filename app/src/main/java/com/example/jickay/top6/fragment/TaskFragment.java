@@ -1,35 +1,31 @@
 package com.example.jickay.top6.fragment;
 
-import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
-import android.content.ContentUris;
-import android.content.ContentValues;
-import android.content.Context;
+import android.appwidget.AppWidgetManager;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.RequiresApi;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.content.CursorLoader;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.example.jickay.top6.MainActivity;
 import com.example.jickay.top6.R;
-import com.example.jickay.top6.Task;
 import com.example.jickay.top6.TaskRecyclerAdapter;
+import com.example.jickay.top6.notifications.ReminderManager;
+import com.example.jickay.top6.widget.ListWidgetService;
 import com.example.jickay.top6.provider.TaskProvider;
 
-import java.util.ArrayList;
+import java.util.Calendar;
 
 /**
  * Created by user on 7/2/2017.
@@ -42,12 +38,14 @@ public class TaskFragment extends Fragment {
     Cursor cursor;
     TextView empty;
 
+    AppWidgetManager widgetManager;
+
     public TaskFragment() {}
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        adapter = new TaskRecyclerAdapter(getActivity(),"current");
+        adapter = new TaskRecyclerAdapter(this, getActivity(),"current");
     }
 
     @Override
@@ -67,19 +65,12 @@ public class TaskFragment extends Fragment {
         super.onResume();
         setFullscreen(getActivity());
 
-        // Count number complete today
-        int doneToday = getCompletedToday(getContext());
-        MainActivity.setDoneToday(doneToday);
-        MainActivity.updateDoneToday();
-
         // Load new cursor to refresh view; Does not display any rows completed before
-        Uri uri = TaskProvider.CONTENT_URI;
-        String where = "CAST(" + TaskProvider.COLUMN_COMPLETION_BEFORE + " as TEXT) =?";
-        String[] filter = new String[] {"0"};
-        String sortOrder = TaskProvider.COLUMN_DATE + " ASC, " + TaskProvider.COLUMN_IMPORTANCE + " DESC";
-        cursor = new CursorLoader(getActivity(),uri,null,where,filter,sortOrder).loadInBackground();
-        cursor.moveToFirst();
-        adapter.swapCursor(cursor);
+        Intent intent = new Intent(getContext(), ListWidgetService.class);
+        intent.setAction("android.appwidget.action.APPWIDGET_UPDATE");
+        getContext().sendBroadcast(intent);
+        Log.i("Fragment","Broadcast intent to widget provider");
+        refreshCursor();
 
         // Show starting instructions if no tasks
         if (!cursor.moveToFirst()) {
@@ -97,6 +88,24 @@ public class TaskFragment extends Fragment {
             layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
             recView.setLayoutManager(layoutManager);
         }
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (!cursor.moveToFirst()) {
+            ReminderManager.setReminder(getActivity(),"empty",0,getString(R.string.empty_notification_message),Calendar.getInstance(),R.color.colorAccent);
+        }
+    }
+
+    public void refreshCursor() {
+        Uri uri = TaskProvider.CONTENT_URI;
+        String where = "CAST(" + TaskProvider.COLUMN_COMPLETION_BEFORE + " as TEXT) =?";
+        String[] filter = new String[] {"0"};
+        String sortOrder = TaskProvider.COLUMN_DATE + " ASC, " + TaskProvider.COLUMN_IMPORTANCE + " DESC";
+        cursor = new CursorLoader(getActivity(),uri,null,where,filter,sortOrder).loadInBackground();
+        cursor.moveToFirst();
+        adapter.swapCursor(cursor);
     }
 
     public static void setFullscreen(Activity activity) {
@@ -131,22 +140,4 @@ public class TaskFragment extends Fragment {
         }
     }
 
-    public int getCompletedToday(Context context) {
-        // Get all tasks complete today
-        Uri allCompleted = TaskProvider.CONTENT_URI;
-        String where = "CAST(" + TaskProvider.COLUMN_COMPLETION_TODAY + " as TEXT) =?";
-        String[] filter = new String[]{"1"};
-        String sortOrder = TaskProvider.COLUMN_DATE + " ASC";
-        Cursor cursor = new CursorLoader(context, allCompleted, null, where, filter, sortOrder).loadInBackground();
-
-        // Count number in list
-        int count = 0;
-        if (cursor.moveToFirst()) {
-            do {
-                count++;
-            } while (cursor.moveToNext());
-        }
-
-        return count;
-    }
 }

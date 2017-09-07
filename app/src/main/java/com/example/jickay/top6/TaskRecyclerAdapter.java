@@ -1,30 +1,39 @@
 package com.example.jickay.top6;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.appwidget.AppWidgetManager;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.graphics.Color;
-import android.media.Image;
 import android.net.Uri;
-import android.support.design.widget.FloatingActionButton;
+import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.view.ContextThemeWrapper;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.NumberPicker;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.example.jickay.top6.fragment.TaskFragment;
 import com.example.jickay.top6.provider.TaskProvider;
+import com.example.jickay.top6.settings.SettingsActivity;
 
 import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 /**
  * Created by ViJack on 6/21/2017.
@@ -33,7 +42,7 @@ import java.util.Calendar;
 public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapter.ViewHolder>
 {
     private static int LEADING_DAYS = 10;
-    private int PER_PAGE = 3;
+
     private int WHITE_BACKGROUND = R.color.cardview_light_background;
     private int RED_BACKGROUND = R.color.colorOverdue;
     private int GREEN_BACKGROUND = R.color.colorAccent;
@@ -41,13 +50,19 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
     private int BLACK_TEXT = R.color.cardview_dark_background;
 
     private Context context;
+    private TaskFragment fragment;
     private Cursor cursor;
     private int currentId;
     private String listType;
 
     private ViewGroup parent;
+    private MainActivity mainActivity;
 
-    public TaskRecyclerAdapter(Context c, String type) {
+    private SharedPreferences sharedPref;
+    private SharedPreferences.Editor prefEditor;
+
+    public TaskRecyclerAdapter(TaskFragment f, Context c, String type) {
+        fragment = f;
         context = c;
         listType = type;
     }
@@ -86,6 +101,7 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
         RelativeLayout card = (RelativeLayout) LayoutInflater.from(context)
                 .inflate(R.layout.task_card,parent,false);
         this.parent = parent;
+        mainActivity = new MainActivity();
 
         return new ViewHolder(card);
     }
@@ -117,12 +133,41 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
         viewHolder.task_num.setText(taskPos);
         viewHolder.task_desc.setText(description);
 
-        // Set starting completion
+        // Set initial completion for each card
+        setInitialCompletion(viewHolder,completion_today,completion_before,taskPos,date,title,importanceColor);
+
+        // Set button listener to edit task card
+        setEditCardListener(viewHolder.edit_button, i);
+
+        // Set delay listener to push back task date
+        if (fragment != null) {
+            setDelayCardListener(viewHolder, viewHolder.delay_button, i, currentId);
+        } else {
+            viewHolder.delay_button.setVisibility(View.GONE);
+            viewHolder.delay_button.setEnabled(false);
+        }
+
+        // Set completion listener for task_num view
+        setCompletionListener(parent, viewHolder, viewHolder.complete_button, taskNumView, date, taskPos, title, importanceColor, i);
+    }
+
+    @Override
+    public int getItemCount() {
+        int count = cursor !=null ? cursor.getCount() : 0;
+        return count;
+    }
+
+    private void setInitialCompletion(ViewHolder viewHolder,
+                                      int completion_today, int completion_before,
+                                      String taskPos, String dateString, String title,
+                                      int importanceColor) {
         int completion_check = 0;
         switch (listType) {
+            // For today's list only check current completion
             case "current":
                 completion_check = completion_today;
                 break;
+            // All other cases check current and past completion
             default:
                 if ((completion_today | completion_before) == 1) {
                     completion_check = 1;
@@ -139,22 +184,10 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
                 checkOverdue(viewHolder, dateString, taskPos, title);
                 break;
         }
-
-        // Set completion listener for task_num view
-        setCompletionListener(parent, viewHolder, viewHolder.complete_button, taskNumView, dateString, taskPos, title, importanceColor, i);
-
-        // Set button listener to edit task card
-        editCardListener(viewHolder.edit_button, i);
     }
 
-    @Override
-    public int getItemCount() {
-        int count = cursor !=null ? cursor.getCount() : 0;
-        return count;
-    }
-
-    private void editCardListener(final ImageView edit_button,
-                                  final int i) {
+    private void setEditCardListener(final ImageView edit_button,
+                                     final int i) {
         // Listener for clicking a task in the list
         edit_button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -172,14 +205,97 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
         });
     }
 
+    private void setDelayCardListener(final ViewHolder viewHolder, final ImageView delay_button, final int i, final int currentId) {
+        delay_button.setOnClickListener(new View.OnClickListener() {
+            int year; int month; int day; String dateData;
+            @Override
+            public void onClick(View view) {
+                // Build and inflate view with picker
+                AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(context, R.style.AlertDialogCustom));
+                LayoutInflater li = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                View pickerView = li.inflate(R.layout.number_picker, null);
+                final NumberPicker picker = (NumberPicker) pickerView.findViewById(R.id.day_picker);
+                picker.setMinValue(1);
+                picker.setMaxValue(31);
+
+                // Move to task in db and get id
+                cursor.moveToPosition(i);
+                // Split parts of date into appropriate integers
+                dateData = cursor.getString(cursor.getColumnIndex(TaskProvider.COLUMN_DATE));
+                Log.i("DelayTask","Current date of task in db is " + dateData);
+                year = Integer.parseInt(dateData.split("-")[0]);
+                month = Integer.parseInt(dateData.split("-")[1]);
+                day = Integer.parseInt(dateData.split("-")[2]);
+
+                // Set the dialog attributes
+                builder.setTitle(R.string.delay_task)
+                        // Specify the list array, the items to be selected by default (null for none),
+                        // and the listener through which to receive callbacks when items are selected
+                        .setView(pickerView)
+                        // Set the action buttons
+                        .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int id) {
+                                delayTaskFunction(viewHolder,picker,year,month,day,dateData,currentId);
+                            }
+                        })
+                        .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.dismiss();
+                            }
+                        });
+
+                builder.create().show();
+            }
+        });
+    }
+
+    private void delayTaskFunction(ViewHolder viewHolder, NumberPicker picker,
+                                   int year, int month, int day,
+                                   String dateData, long currentId) {
+        // Get value from number picker
+        int daysToDelay = picker.getValue();
+        // Check max day of month
+        Calendar c = new GregorianCalendar(year,month,day);
+        int daysInMonth = c.getActualMaximum(Calendar.DAY_OF_MONTH);
+        // Set new day value and adjust if exceeds current month
+        int finalDay = day + daysToDelay;
+        if (finalDay > daysInMonth) {
+            finalDay -= daysInMonth;
+            month += 1;
+        }
+        // Change values back to string
+        String dayString = finalDay < 10 ? "0" + Integer.toString(finalDay) : Integer.toString(finalDay);
+        String newDateData = Integer.toString(year) + "-" +
+                Integer.toString(month) + "-" +
+                dayString;
+        Log.i("DelayTask","Old date is " + dateData + ", New date is " + newDateData);
+
+        // Store new date string into db
+        Uri delayDate = ContentUris.withAppendedId(TaskProvider.CONTENT_URI, currentId);
+        ContentValues values = new ContentValues();
+        values.put(TaskProvider.COLUMN_DATE, newDateData);
+        context.getContentResolver().update(delayDate, values, null, null);
+
+        // Display new date on card
+        viewHolder.task_date.setText(formatDate(newDateData));
+        fragment.refreshCursor();
+
+        // Snackbar notification of delay changes
+        Activity activity = (Activity) parent.getContext();
+        Snackbar.make(activity.findViewById(R.id.main_activity),"Task has been delayed by " + daysToDelay + " days",Snackbar.LENGTH_SHORT).show();
+    }
+
     private void setCompletionListener(final ViewGroup parent, final ViewHolder viewHolder,
                                        final ImageView complete_button, final TextView textView,
-                                       final String dateString, final String taskPos, final String title,
+                                       final String date, final String taskPos, final String title,
                                        final int importanceColor, final int i) {
         // Toggle completion when number is clicked
         complete_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                String dateString = formatDate(date);
                 // Set cursor to appropriate row
                 cursor.moveToPosition(i);
                 currentId = cursor.getInt(cursor.getColumnIndex(TaskProvider.COLUMN_TASKID));
@@ -190,7 +306,7 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
                     viewHolder.task_title.setText(title);
 
                     // Update row in database
-                    setCompletion(currentId,true);
+                    setCompletionValues(currentId,true);
 
                     // Add to tasks done today
                     if (listType.matches("current")) {
@@ -198,14 +314,17 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
                         MainActivity.updateDoneToday();
                     }
 
+                    // Clear notifications
+                    NotificationManager mgr = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+                    mgr.cancel(currentId);
+
                     completeSnackbar(parent,viewHolder,currentId,dateString,taskPos,title,importanceColor);
                 } else {
                     setCardColors(viewHolder,taskPos,importanceColor,WHITE_BACKGROUND,BLACK_TEXT,importanceColor);
-                    checkOverdue(viewHolder, dateString, taskPos, title);
-                    viewHolder.task_title.setText(title);
+                    checkOverdue(viewHolder, date, taskPos, title);
 
                     // Update row in database
-                    setCompletion(currentId,false);
+                    setCompletionValues(currentId,false);
 
                     // Subtract from tasks done today
                     if (listType.matches("current")) {
@@ -227,7 +346,7 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
                 .setAction(R.string.undo, new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        setCompletion(currentId,false);
+                        setCompletionValues(currentId,false);
                         MainActivity.setDoneToday(MainActivity.getDoneToday()-1);
                         MainActivity.updateDoneToday();
                         setCardColors(viewHolder,taskPos,importanceColor,WHITE_BACKGROUND,BLACK_TEXT,BLACK_TEXT);
@@ -238,7 +357,7 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
         mySnackbar.show();
     }
 
-    private void setCompletion(int currentId, boolean completed) {
+    public void setCompletionValues(int currentId, boolean completed) {
         ContentValues values = new ContentValues();
         switch (listType) {
             case "current":
@@ -291,10 +410,38 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
             // No value selected
             case -1: color = R.color.colorPrimaryMed; break;
             // Importance value selected
-            case 1: color = R.color.importance_low; break;
-            case 2: color = R.color.importance_med; break;
-            case 3: color = R.color.importance_high; break;
+            case 3: color = getColorPreference(context,"high"); break;
+            case 2: color = getColorPreference(context,"med"); break;
+            case 1: color = getColorPreference(context,"low"); break;
         }
+        return color;
+    }
+
+    public static int getColorPreference(Context context, String importanceLevel) {
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
+
+        String colorString;
+        // Get pref value for given level
+        switch (importanceLevel) {
+            case "high": colorString = pref.getString(SettingsActivity.COLOR_HIGH,""); break;
+            case "med": colorString = pref.getString(SettingsActivity.COLOR_MED,""); break;
+            case "low": colorString = pref.getString(SettingsActivity.COLOR_LOW,""); break;
+            default: colorString = ""; break;
+        }
+
+        // Get color resource for pref value
+        int color;
+        switch (colorString) {
+            case "1": color = R.color.importance_1; break;
+            case "2": color = R.color.importance_2; break;
+            case "3": color = R.color.importance_3; break;
+            case "4": color = R.color.importance_4; break;
+            case "5": color = R.color.importance_5; break;
+            case "6": color = R.color.importance_6; break;
+            case "7": color = R.color.importance_7; break;
+            default: color = R.color.colorPrimaryMed; break;
+        }
+
         return color;
     }
 
@@ -303,36 +450,48 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
         int progress = getUrgency(dateString);
         if (progress >= 0) {
             viewHolder.bar.setProgress(progress);
+            viewHolder.task_title.setText(title);
+            // Update db to mark task as not overdue
+            Uri overdue = ContentUris.withAppendedId(TaskProvider.CONTENT_URI, currentId);
+            ContentValues values = new ContentValues();
+            values.put(TaskProvider.COLUMN_OVERDUE, 0);
+            context.getContentResolver().update(overdue, values, null, null);
         } else {
             viewHolder.bar.setProgress(100);
             setCardColors(viewHolder, taskPos, RED_BACKGROUND, RED_BACKGROUND, WHITE_TEXT, RED_BACKGROUND);
             viewHolder.task_title.setText("OVERDUE: " + title);
+            // Update db to mark task as overdue
+            Uri overdue = ContentUris.withAppendedId(TaskProvider.CONTENT_URI, currentId);
+            ContentValues values = new ContentValues();
+            values.put(TaskProvider.COLUMN_OVERDUE, 1);
+            context.getContentResolver().update(overdue, values, null, null);
         }
     }
 
-    public static int getUrgency(String date) {
+    public int getUrgency(String date) {
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
+        LEADING_DAYS = Integer.parseInt(pref.getString("progress_bar","10"));
+
         int progressValue = 0;
-
         if (!date.isEmpty()) {
-            int taskDay = Integer.parseInt(date.split(" ")[1]);
-            //Calculate value for progress bar
+            // Set up calendar objects for task and current date
+            Calendar taskCalendar = Calendar.getInstance();
+            taskCalendar.set(Calendar.YEAR,Integer.parseInt(date.split("-")[0]));
+            taskCalendar.set(Calendar.MONTH,Integer.parseInt(date.split("-")[1]));
+            taskCalendar.set(Calendar.DAY_OF_MONTH,Integer.parseInt(date.split("-")[2]));
+            int taskDayOfYear = taskCalendar.get(Calendar.DAY_OF_YEAR);
+
             Calendar c = Calendar.getInstance();
-            int currentDay = c.get(Calendar.DAY_OF_MONTH);
-            int daysInMonth = c.getActualMaximum(Calendar.DAY_OF_MONTH);
+            int currentDayOfYear = c.get(Calendar.DAY_OF_YEAR);
 
-            int difference;
-            if (taskDay >= currentDay) {
-                difference = taskDay - currentDay;
-            } else {
-                int remainingDays = daysInMonth - currentDay;
-                difference = taskDay + remainingDays;
-            }
-
-            int daysRemaining = LEADING_DAYS - difference;
+            // Calculate different between task day and current day
+            int difference = taskDayOfYear - currentDayOfYear;
 
             //Set progress bar length
-            if (difference <= LEADING_DAYS) {
-                progressValue = 100 / LEADING_DAYS * daysRemaining;
+            if (0 <= difference && difference <= LEADING_DAYS) {
+                progressValue = 100 / LEADING_DAYS * (LEADING_DAYS - difference);
+            } else if (difference > LEADING_DAYS){
+                progressValue = 0;
             } else {
                 progressValue = -1;
             }

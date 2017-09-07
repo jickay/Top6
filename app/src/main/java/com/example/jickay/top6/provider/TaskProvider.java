@@ -31,9 +31,10 @@ public class TaskProvider extends ContentProvider {
     public static final String COLUMN_IMPORTANCE = "importance";
     public static final String COLUMN_COMPLETION_TODAY = "completion_today";
     public static final String COLUMN_COMPLETION_BEFORE = "completion_before";
+    public static final String COLUMN_OVERDUE = "overdue";
 
     // Database constants
-    public static final int DATABASE_VERSION = 1;
+    public static final int DATABASE_VERSION = 2;
     public static final String DATABASE_NAME = "data";
     public static final String DATABASE_TABLE = "tasks";
 
@@ -65,7 +66,8 @@ public class TaskProvider extends ContentProvider {
                 COLUMN_DESCRIPTION + " text not null, " +
                 COLUMN_IMPORTANCE + " integer not null, " +
                 COLUMN_COMPLETION_TODAY + " integer not null, " +
-                COLUMN_COMPLETION_BEFORE + " integer not null);";
+                COLUMN_COMPLETION_BEFORE + " integer not null, " +
+                COLUMN_OVERDUE + " integer not null);";
 
         DatabaseHelper(Context context) {
             super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -77,8 +79,18 @@ public class TaskProvider extends ContentProvider {
         }
 
         @Override
-        public void onUpgrade(SQLiteDatabase db, int i, int ii) {
-            throw new UnsupportedOperationException();
+        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+            int upgradeTo = oldVersion + 1;
+            while (upgradeTo <= newVersion)
+            {
+                switch (upgradeTo)
+                {
+                    case 2:
+                        db.execSQL("ALTER TABLE " + DATABASE_TABLE + " ADD COLUMN " + COLUMN_OVERDUE + " INT");
+                        break;
+                }
+                upgradeTo++;
+            }
         }
     }
 
@@ -147,6 +159,7 @@ public class TaskProvider extends ContentProvider {
             getContext().getContentResolver().notifyChange(uri, null);
         }
 
+
         return count;
     }
 
@@ -160,7 +173,8 @@ public class TaskProvider extends ContentProvider {
                 COLUMN_DESCRIPTION,
                 COLUMN_IMPORTANCE,
                 COLUMN_COMPLETION_TODAY,
-                COLUMN_COMPLETION_BEFORE
+                COLUMN_COMPLETION_BEFORE,
+                COLUMN_OVERDUE
         };
 
         Cursor c;

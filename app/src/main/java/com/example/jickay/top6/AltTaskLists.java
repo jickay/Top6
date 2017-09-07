@@ -35,7 +35,7 @@ public class AltTaskLists extends AppCompatActivity {
         listType = getIntent().getStringExtra("ListType");
 
         // Set adapter for recycler view
-        adapter = new TaskRecyclerAdapter(this,listType);
+        adapter = new TaskRecyclerAdapter(null,this,listType);
         recView = (RecyclerView) findViewById(R.id.task_list_alt);
         empty = (TextView) findViewById(R.id.empty_message);
 
@@ -75,14 +75,14 @@ public class AltTaskLists extends AppCompatActivity {
                 this.setTitle("All Tasks");
                 where = null;
                 valueFilter = null;
-                sortOrder = TaskProvider.COLUMN_DATE + " ASC, " + TaskProvider.COLUMN_IMPORTANCE + " DESC";
+                sortOrder = TaskProvider.COLUMN_DATE + " DESC, " + TaskProvider.COLUMN_IMPORTANCE + " DESC";
                 break;
             // All in completed column where value is 1
             case "completed":
                 this.setTitle("Completed Tasks");
                 where = "CAST(" + TaskProvider.COLUMN_COMPLETION_BEFORE + " as TEXT) =?";
                 valueFilter = new String[]{"1"};
-                sortOrder = TaskProvider.COLUMN_DATE + " ASC, " + TaskProvider.COLUMN_IMPORTANCE + " DESC";
+                sortOrder = TaskProvider.COLUMN_DATE + " DESC, " + TaskProvider.COLUMN_IMPORTANCE + " DESC";
                 break;
             // All in date column that is before today's date (Needs work!)
             case "past_due":

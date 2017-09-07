@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="176dp" >
+    android:layout_height="wrap_content" >
 
     <!--<android.support.design.widget.FloatingActionButton-->
         <!--android:id="@+id/edit_fab"-->
@@ -23,29 +23,31 @@
             android:id="@+id/task_card"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:minHeight="80dp"
             android:layout_marginLeft="12dp"
+            android:layout_marginEnd="12dp"
             android:layout_marginRight="16dp"
-            android:layout_marginTop="6dp"
-            android:layout_marginBottom="6dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
             card_view:cardCornerRadius="2dp"
             card_view:cardElevation="3dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="horizontal"
-                android:weightSum="8">
+                android:orientation="horizontal">
 
+                <!--Left side of card-->
                 <LinearLayout
                     android:id="@+id/card_left"
-                    android:layout_width="48dp"
+                    android:layout_width="52dp"
                     android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    android:weightSum="10">
+                    android:orientation="vertical" >
 
                     <TextView
                         android:id="@+id/task_num"
-                        android:layout_width="48dp"
+                        android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:layout_weight="10"
                         android:background="@color/colorAccent"
@@ -67,7 +69,7 @@
                     <TextView
                         android:id="@+id/task_date"
                         android:layout_width="match_parent"
-                        android:layout_height="32dp"
+                        android:layout_height="24dp"
                         android:background="@color/colorAccent"
                         android:layout_weight="1"
                         android:gravity="center"
@@ -78,6 +80,7 @@
 
                 </LinearLayout>
 
+                <!--Main section of card-->
                 <RelativeLayout
                     android:id="@+id/card_right_layout"
                     android:layout_width="match_parent"
@@ -89,7 +92,9 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:gravity="center"
-                        android:layout_alignParentBottom="true">
+                        android:layout_alignParentBottom="true"
+                        android:paddingTop="8dp"
+                        android:paddingBottom="8dp">
 
                         <TextView
                             android:id="@+id/task_title"
@@ -98,13 +103,14 @@
                             android:layout_alignParentTop="true"
                             android:layout_marginBottom="6dp"
                             android:layout_marginLeft="10dp"
+                            android:layout_marginStart="10dp"
                             android:layout_marginRight="24dp"
+                            android:layout_marginEnd="24dp"
                             android:layout_marginTop="8dp"
-                            android:gravity="left|bottom"
+                            android:gravity="start|bottom"
                             android:lineSpacingExtra="-3dp"
-                            android:maxLines="3"
                             android:text="Title"
-                            android:textSize="21dp" />
+                            android:textSize="21sp" />
 
                         <TextView
                             android:id="@+id/task_description"
@@ -117,7 +123,8 @@
                             android:layout_below="@+id/task_title"
                             android:layout_marginBottom="8dp"
                             android:layout_marginRight="8dp"
-                            android:text="TextView" />
+                            android:layout_marginEnd="8dp"
+                            android:text="Description" />
 
 
                     </RelativeLayout>
@@ -129,7 +136,6 @@
                     android:layout_width="36dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:weightSum="3"
                     android:orientation="vertical">
 
                     <ImageView
@@ -137,9 +143,10 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
-                        android:padding="6dp"
+                        android:padding="5dp"
+                        android:layout_marginBottom="0.5dp"
                         android:clickable="true"
-                        android:background="@color/colorPrimaryLight"
+                        android:background="?attr/selectableItemBackgroundBorderless"
                         android:tint="@color/colorPrimaryMed"
                         app:srcCompat="@android:drawable/ic_menu_edit" />
 
@@ -148,9 +155,10 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
-                        android:padding="6dp"
+                        android:padding="4dp"
+                        android:layout_marginBottom="0.5dp"
                         android:clickable="true"
-                        android:background="@color/colorPrimaryLight"
+                        android:background="?attr/selectableItemBackgroundBorderless"
                         android:tint="@color/colorPrimaryMed"
                         app:srcCompat="@drawable/ic_access_time_black_24dp" />
 
@@ -159,9 +167,9 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
-                        android:padding="4dp"
+                        android:padding="3dp"
                         android:clickable="true"
-                        android:background="@color/colorPrimaryLight"
+                        android:background="?attr/selectableItemBackgroundBorderless"
                         android:tint="@color/colorPrimaryMed"
                         app:srcCompat="@drawable/ic_done_black_24dp" />
 

@@ -3,14 +3,18 @@ package com.example.jickay.top6;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.DialogFragment;
+import android.app.NotificationManager;
 import android.content.ContentUris;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
+import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
@@ -27,12 +31,13 @@ import android.widget.RadioGroup;
 
 import com.example.jickay.top6.fragment.DatePickerFragment;
 import com.example.jickay.top6.fragment.TaskFragment;
+import com.example.jickay.top6.notifications.ReminderManager;
 import com.example.jickay.top6.provider.TaskProvider;
+
+import java.util.Calendar;
 
 
 public class CreateEditTask extends AppCompatActivity {
-
-    int LEADING_DAYS = 10;
 
     private Cursor c;
 
@@ -41,10 +46,12 @@ public class CreateEditTask extends AppCompatActivity {
     private EditText desc;
 
     private String titleString;
-    private String dateString;
     private String descString;
 
     private static String dateData;
+    private static Calendar taskTime;
+    private static int importanceColor = R.color.colorPrimaryMed;
+
     private RadioGroup importance;
     private int importanceValue = -1;
 
@@ -52,6 +59,15 @@ public class CreateEditTask extends AppCompatActivity {
     private FloatingActionButton cancelDelete;
 
     public static void setDateData(String data) { dateData = data; }
+    public static void setCalendar(int year, int month, int day) {
+        taskTime.set(Calendar.YEAR,year);
+        taskTime.set(Calendar.MONTH,month);
+        taskTime.set(Calendar.DAY_OF_MONTH,day);
+        taskTime.set(Calendar.HOUR_OF_DAY,0);
+        taskTime.set(Calendar.MINUTE,0);
+        taskTime.set(Calendar.SECOND,0);
+        Log.i("SetCalendar", taskTime.getTime().toString());
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,16 +86,15 @@ public class CreateEditTask extends AppCompatActivity {
         save = (FloatingActionButton) findViewById(R.id.save_task);
         cancelDelete = (FloatingActionButton) findViewById(R.id.cancel_delete_task);
 
-        // Get intent type
-        final String intent = getIntent().getStringExtra("Intent");
+        // Set current instance of taskTime
+        taskTime = Calendar.getInstance();
 
-        // For adding new tasks
-        if (intent.matches("new")) {
-            newTaskActivity();
-        }
-        // For editing existing tasks
-        if (intent.matches("edit")) {
-            editTaskActivity(intent);
+        // Get intent type and use corresponding create or edit code
+        final String intentType = getIntent().getStringExtra("Intent");
+
+        switch (intentType) {
+            case "new": newTaskActivity(); break;
+            case "edit": editTaskActivity(intentType); break;
         }
 
         // Open date picker
@@ -88,14 +103,14 @@ public class CreateEditTask extends AppCompatActivity {
             public void onFocusChange(View v, boolean hasFocus) {
                 if (hasFocus) {
                     // Open date picking dialog
-                    showDatePickerDialog(v,date);
+                    showDatePickerDialog();
                 }
             }
         });
 
-        // Clear focus when hit enter
-        setClearFocusOnEnter(title);
-        setClearFocusOnEnter(desc);
+        // Focus keyboard controls
+        setClearFocusOnEnter(title,"title");
+        setClearFocusOnEnter(desc,"");
 
         // Set value based on importance
         importance.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
@@ -111,11 +126,15 @@ public class CreateEditTask extends AppCompatActivity {
         this.setTitle(R.string.title_activity_new_task);
         cancelDelete.setImageDrawable(ContextCompat.getDrawable(this, android.R.drawable.ic_menu_close_clear_cancel));
 
+        // Show keyboard for quicker creation of new tasks
+        openKeyboardOnFocus(title);
+        openKeyboardOnFocus(desc);
+
         // Save new tasks
         save.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                hideKeyboard();
+                controlKeyboard("hide");
 
                 if (inputValid()) {
                     long id = saveNewTask();
@@ -150,6 +169,7 @@ public class CreateEditTask extends AppCompatActivity {
 
         // Saving existing task edits
         save.setOnClickListener(new View.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
             @Override
             public void onClick(View view) {
                 if (intent.matches("edit")) {
@@ -225,6 +245,10 @@ public class CreateEditTask extends AppCompatActivity {
         long id = ContentUris.parseId(uri);
         Log.i("New task","New task inserted into db; id="+id);
 
+        // Set notification manager
+        ReminderManager.setReminder(this,"warning",id,titleString, taskTime, importanceColor);
+        ReminderManager.setReminder(this,"overdue",id,titleString, taskTime, R.color.colorOverdue);
+
         return id;
     }
 
@@ -242,8 +266,15 @@ public class CreateEditTask extends AppCompatActivity {
                 c.getString(c.getColumnIndex(TaskProvider.COLUMN_DATE))));
         desc.setText(c.getString(c.getColumnIndex(TaskProvider.COLUMN_DESCRIPTION)));
         setCheckedRadio(importance,c.getInt(c.getColumnIndex(TaskProvider.COLUMN_IMPORTANCE)));
+
+        // Set taskTime object to match task date
+        setCalendar(Integer.parseInt(dateData.split("-")[0]),
+                Integer.parseInt(dateData.split("-")[1]),
+                Integer.parseInt(dateData.split("-")[2]));
+        Log.i("FillTask","Calendar set to " + taskTime.getTime().toString());
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     private void saveTaskEdit(int id) {
         // Get text from EditTexts at save
         titleString = title.getText().toString();
@@ -262,6 +293,10 @@ public class CreateEditTask extends AppCompatActivity {
         if (count != 1) {
             throw new IllegalStateException("Unable to update id "+id);
         }
+
+        // Update notification
+        ReminderManager.setReminder(this,"warning",id,titleString, taskTime, importanceColor);
+        ReminderManager.setReminder(this,"overdue",id,titleString, taskTime, R.color.colorOverdue);
     }
 
     private void deleteTask(int id) {
@@ -269,9 +304,13 @@ public class CreateEditTask extends AppCompatActivity {
         Uri uri = ContentUris.withAppendedId(TaskProvider.CONTENT_URI,id);
         getContentResolver().delete(uri,null,null);
         Log.i("DeleteTask","Entry deleted: ID "+id);
+        // Cancel notification
+        NotificationManager mgr = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        mgr.cancel(id);
+        Log.i("DeleteTask","Cancel notification for task " + id);
     }
 
-    private void showDatePickerDialog(View v, EditText field) {
+    private void showDatePickerDialog() {
         DialogFragment df = new DatePickerFragment();
         df.show(getFragmentManager(), "datePicker");
     }
@@ -285,19 +324,16 @@ public class CreateEditTask extends AppCompatActivity {
             checked = ((RadioButton) view).isChecked();
             // Check which radio button was clicked
             switch(view.getId()) {
-                case R.id.importance1:
-                    if (checked)
-                        value = 1;
+                case R.id.importance_low:
+                    if (checked) { value = 1; importanceColor = R.color.importance_3; }
                     break;
-                case R.id.importance2:
-                    if (checked)
-                        value = 2;
+                case R.id.importance_med:
+                    if (checked) { value = 2; importanceColor = R.color.importance_2; }
                     break;
-                case R.id.importance3:
-                    if (checked)
-                        value = 3;
+                case R.id.importance_high:
+                    if (checked) { value = 3; importanceColor = R.color.importance_1; }
                     break;
-                default: value = -1; break;
+                default: value = -1; importanceColor = R.color.colorPrimaryMed; break;
             }
         }
 
@@ -306,29 +342,50 @@ public class CreateEditTask extends AppCompatActivity {
 
     private void setCheckedRadio(RadioGroup radioGroup,int importance) {
         switch (importance) {
-            case 1: ((RadioButton)radioGroup.findViewById(R.id.importance1)).setChecked(true);
-                importanceValue = 1; break;
-            case 2: ((RadioButton)radioGroup.findViewById(R.id.importance2)).setChecked(true);
-                importanceValue = 2; break;
-            case 3: ((RadioButton)radioGroup.findViewById(R.id.importance3)).setChecked(true);
-                importanceValue = 3; break;
+            case 3: ((RadioButton)radioGroup.findViewById(R.id.importance_high)).setChecked(true);
+                importanceValue = 3; importanceColor = TaskRecyclerAdapter.getColorPreference(getApplicationContext(),"high"); break;
+            case 2: ((RadioButton)radioGroup.findViewById(R.id.importance_med)).setChecked(true);
+                importanceValue = 2; importanceColor = TaskRecyclerAdapter.getColorPreference(getApplicationContext(),"med"); break;
+            case 1: ((RadioButton)radioGroup.findViewById(R.id.importance_low)).setChecked(true);
+                importanceValue = 1; importanceColor = TaskRecyclerAdapter.getColorPreference(getApplicationContext(),"low"); break;
         }
     }
 
-    private void hideKeyboard() {
-        InputMethodManager input = (InputMethodManager) getSystemService(getApplicationContext().INPUT_METHOD_SERVICE);
-        input.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(),0);
+    private void openKeyboardOnFocus(View view) {
+        view.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus) {
+                    controlKeyboard("show");
+                }
+            }
+        });
     }
 
-    private void setClearFocusOnEnter(View v) {
+    private void controlKeyboard(String command) {
+        InputMethodManager input = (InputMethodManager) getSystemService(getApplicationContext().INPUT_METHOD_SERVICE);
+        switch (command) {
+            case "hide": input.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0); break;
+            case "show": input.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0); break;
+        }
+    }
+
+    private void setClearFocusOnEnter(View v, final String viewType) {
         v.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
+                // When detecting enter key
                 if (event.getAction()==KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER) {
                     getCurrentFocus().clearFocus();
-                    hideKeyboard();
+                    controlKeyboard("hide");
+
+                    if (viewType.matches("title")) {
+                        date.requestFocus();
+                    }
+
                     return true;
                 }
+
                 return false;
             }
         });
