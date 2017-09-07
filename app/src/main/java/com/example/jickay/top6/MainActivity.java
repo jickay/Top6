@@ -50,8 +50,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public static int getDoneToday() { return doneToday; }
     public static int getDoneYesterday() { return doneYesterday; }
     public static ArrayList<Task> getIncompleteTasks() { return incompleteTasks; }
-    public static ArrayList<Task> getCompletedTasks() { return completedTasks; }
-    public static ArrayList<Task> getDeletedTasks() { return deletedTasks; }
 
     // Setter methods
     public static void setDoneToday(int number) { doneToday = number; prefEditor.putInt("DoneToday",number).commit(); }

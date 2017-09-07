@@ -13,8 +13,12 @@
     <color name="progressBarForeground">#000000</color>
 
     <!--Importance colors-->
-    <color name="importance_low">#5194ff</color>
-    <color name="importance_med">#a851ff</color>
-    <color name="importance_high">#ff425b</color>
+    <color name="importance_1">#f22b45</color>
+    <color name="importance_2">#fc7b11</color>
+    <color name="importance_3">#fccd11</color>
+    <color name="importance_4">#58e8c6</color>
+    <color name="importance_5">#61a3ef</color>
+    <color name="importance_6">#b276f2</color>
+    <color name="importance_7">#ff72c6</color>
 
 </resources>

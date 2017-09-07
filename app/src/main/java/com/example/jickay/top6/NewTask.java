@@ -107,15 +107,15 @@ public class NewTask extends AppCompatActivity {
 
         // Check which radio button was clicked
         switch(view.getId()) {
-            case R.id.importance1:
+            case R.id.importance_low:
                 if (checked)
                     value = 1;
                     break;
-            case R.id.importance2:
+            case R.id.importance_med:
                 if (checked)
                     value = 2;
                     break;
-            case R.id.importance3:
+            case R.id.importance_high:
                 if (checked)
                     value = 3;
                 break;

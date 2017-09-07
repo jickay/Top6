@@ -41,13 +41,13 @@
                 <!--Left side of card-->
                 <LinearLayout
                     android:id="@+id/card_left"
-                    android:layout_width="48dp"
+                    android:layout_width="52dp"
                     android:layout_height="match_parent"
                     android:orientation="vertical" >
 
                     <TextView
                         android:id="@+id/task_num"
-                        android:layout_width="48dp"
+                        android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:layout_weight="10"
                         android:background="@color/colorAccent"
@@ -69,7 +69,7 @@
                     <TextView
                         android:id="@+id/task_date"
                         android:layout_width="match_parent"
-                        android:layout_height="32dp"
+                        android:layout_height="24dp"
                         android:background="@color/colorAccent"
                         android:layout_weight="1"
                         android:gravity="center"

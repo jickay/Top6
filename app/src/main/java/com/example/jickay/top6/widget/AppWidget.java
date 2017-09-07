@@ -1,4 +1,4 @@
-package com.example.jickay.top6.provider;
+package com.example.jickay.top6.widget;
 
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
@@ -6,12 +6,9 @@ import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.design.widget.Snackbar;
 import android.util.Log;
-import android.widget.LinearLayout;
 import android.widget.RemoteViews;
 
 import com.example.jickay.top6.MainActivity;

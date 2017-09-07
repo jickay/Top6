@@ -50,7 +50,7 @@ public class CreateEditTask extends AppCompatActivity {
 
     private static String dateData;
     private static Calendar taskTime;
-    private static int importanceColor;
+    private static int importanceColor = R.color.colorPrimaryMed;
 
     private RadioGroup importance;
     private int importanceValue = -1;
@@ -324,16 +324,16 @@ public class CreateEditTask extends AppCompatActivity {
             checked = ((RadioButton) view).isChecked();
             // Check which radio button was clicked
             switch(view.getId()) {
-                case R.id.importance1:
-                    if (checked) { value = 1; importanceColor = R.color.importance_low; }
+                case R.id.importance_low:
+                    if (checked) { value = 1; importanceColor = R.color.importance_3; }
                     break;
-                case R.id.importance2:
-                    if (checked) { value = 2; importanceColor = R.color.importance_med; }
+                case R.id.importance_med:
+                    if (checked) { value = 2; importanceColor = R.color.importance_2; }
                     break;
-                case R.id.importance3:
-                    if (checked) { value = 3; importanceColor = R.color.importance_high; }
+                case R.id.importance_high:
+                    if (checked) { value = 3; importanceColor = R.color.importance_1; }
                     break;
-                default: value = -1; break;
+                default: value = -1; importanceColor = R.color.colorPrimaryMed; break;
             }
         }
 
@@ -342,12 +342,12 @@ public class CreateEditTask extends AppCompatActivity {
 
     private void setCheckedRadio(RadioGroup radioGroup,int importance) {
         switch (importance) {
-            case 1: ((RadioButton)radioGroup.findViewById(R.id.importance1)).setChecked(true);
-                importanceValue = 1; importanceColor = R.color.importance_low; break;
-            case 2: ((RadioButton)radioGroup.findViewById(R.id.importance2)).setChecked(true);
-                importanceValue = 2; importanceColor = R.color.importance_med; break;
-            case 3: ((RadioButton)radioGroup.findViewById(R.id.importance3)).setChecked(true);
-                importanceValue = 3; importanceColor = R.color.importance_high; break;
+            case 3: ((RadioButton)radioGroup.findViewById(R.id.importance_high)).setChecked(true);
+                importanceValue = 3; importanceColor = TaskRecyclerAdapter.getColorPreference(getApplicationContext(),"high"); break;
+            case 2: ((RadioButton)radioGroup.findViewById(R.id.importance_med)).setChecked(true);
+                importanceValue = 2; importanceColor = TaskRecyclerAdapter.getColorPreference(getApplicationContext(),"med"); break;
+            case 1: ((RadioButton)radioGroup.findViewById(R.id.importance_low)).setChecked(true);
+                importanceValue = 1; importanceColor = TaskRecyclerAdapter.getColorPreference(getApplicationContext(),"low"); break;
         }
     }
 

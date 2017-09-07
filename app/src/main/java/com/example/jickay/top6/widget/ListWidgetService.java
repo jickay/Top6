@@ -1,7 +1,5 @@
-package com.example.jickay.top6.provider;
+package com.example.jickay.top6.widget;
 
-import android.app.Activity;
-import android.app.LauncherActivity;
 import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.Intent;
@@ -10,12 +8,11 @@ import android.net.Uri;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.CursorLoader;
 import android.util.Log;
-import android.widget.ListView;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 
-import com.example.jickay.top6.MainActivity;
 import com.example.jickay.top6.R;
+import com.example.jickay.top6.provider.TaskProvider;
 
 import java.util.ArrayList;
 
@@ -132,9 +129,9 @@ class ListRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
             // No value selected
             case -1: color = R.color.colorPrimaryMed; break;
             // Importance value selected
-            case 1: color = R.color.importance_low; break;
-            case 2: color = R.color.importance_med; break;
-            case 3: color = R.color.importance_high; break;
+            case 1: color = R.color.importance_3; break;
+            case 2: color = R.color.importance_2; break;
+            case 3: color = R.color.importance_1; break;
         }
         return color;
     }

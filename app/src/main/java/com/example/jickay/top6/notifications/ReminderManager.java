@@ -4,8 +4,8 @@ import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
-import android.support.annotation.RequiresApi;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.example.jickay.top6.provider.TaskProvider;
@@ -18,7 +18,8 @@ import java.util.Calendar;
 
 public class ReminderManager {
 
-    private static int ALARM_DAYS_BEFORE = 3;
+    private static int alarmDays = 3;
+    private static String ALARM_DAYS_DEFAULT = "3";
 
     private static Calendar thisCalendar;
 
@@ -36,20 +37,25 @@ public class ReminderManager {
         Intent intent = new Intent(context, OnAlarmReceiver.class);
         PendingIntent pendingIntent;
 
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
+        alarmDays = Integer.parseInt(pref.getString("warning_days",ALARM_DAYS_DEFAULT));
+        boolean warningOn = pref.getBoolean("warning_switch",true);
+        boolean overdueOn = pref.getBoolean("overdue_switch",true);
+
         switch (type) {
             case "warning":
-                if (difference >= 0) {
+                if (difference >= 0 && warningOn) {
                     // Set early warning notification alarm
                     intent.setAction("Warning");
                     intent.putExtra(TaskProvider.COLUMN_TASKID, taskId);
                     intent.putExtra(TaskProvider.COLUMN_TITLE, title);
                     intent.putExtra(TaskProvider.COLUMN_IMPORTANCE, color);
-                    if (0 <= difference && difference <= ALARM_DAYS_BEFORE) {
+                    if (0 <= difference && difference <= alarmDays) {
                         intent.putExtra("AlarmDaysBefore", difference);
                         thisCalendar.set(Calendar.DAY_OF_MONTH, thisCalendar.get(Calendar.DAY_OF_MONTH) - difference);
-                    } else if (difference > ALARM_DAYS_BEFORE) {
-                        intent.putExtra("AlarmDaysBefore", ALARM_DAYS_BEFORE);
-                        thisCalendar.set(Calendar.DAY_OF_MONTH, thisCalendar.get(Calendar.DAY_OF_MONTH) - ALARM_DAYS_BEFORE);
+                    } else if (difference > alarmDays) {
+                        intent.putExtra("AlarmDaysBefore", alarmDays);
+                        thisCalendar.set(Calendar.DAY_OF_MONTH, thisCalendar.get(Calendar.DAY_OF_MONTH) - alarmDays);
                     }
 
                     pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_ONE_SHOT);
@@ -59,12 +65,14 @@ public class ReminderManager {
                 }
                 break;
             case "overdue":
-                if (difference >= 0) {
+                if (overdueOn) {
                     // Set overdue notification alarm
                     intent.setAction("Overdue");
+                    intent.putExtra(TaskProvider.COLUMN_TASKID, taskId);
+                    intent.putExtra(TaskProvider.COLUMN_TITLE, title);
                     intent.putExtra(TaskProvider.COLUMN_IMPORTANCE,color);
-                    pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_ONE_SHOT);
 
+                    pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_ONE_SHOT);
                     thisCalendar.set(Calendar.DAY_OF_YEAR, thisCalendar.get(Calendar.DAY_OF_YEAR) + 1); // Change thisCalendar to day after set deadline
                     alarmManager.set(AlarmManager.RTC, thisCalendar.getTimeInMillis(), pendingIntent);
 

@@ -2,17 +2,17 @@
 <resources>
 
     <style name="Radio1" parent="Theme.AppCompat.Light">
-        <item name="android:colorControlActivated">@color/importance_low</item>
+        <item name="android:colorControlActivated">@color/importance_3</item>
         <item name="android:colorControlNormal">@color/colorPrimaryDark</item>
     </style>
 
     <style name="Radio2" parent="Theme.AppCompat.Light">
-        <item name="android:colorControlActivated">@color/importance_med</item>
+        <item name="android:colorControlActivated">@color/importance_2</item>
         <item name="android:colorControlNormal">@color/colorPrimaryDark</item>
     </style>
 
     <style name="Radio3" parent="Theme.AppCompat.Light">
-        <item name="android:colorControlActivated">@color/importance_high</item>
+        <item name="android:colorControlActivated">@color/importance_1</item>
         <item name="android:colorControlNormal">@color/colorPrimaryDark</item>
     </style>
 

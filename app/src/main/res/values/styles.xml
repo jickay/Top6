@@ -36,8 +36,8 @@
         <item name="android:textColorSecondary">@color/colorPrimaryMed</item>
     </style>
 
-    <style name="drawerArrowStyle" parent="Widget.AppCompat.DrawerArrowToggle">
-        <item name="spinBars">true</item>
+    <style name="navDrawer" parent="Theme.AppCompat">
+        <item name="android:textColorSecondary">@color/colorAccent</item>
     </style>
 
     <style name="numberPicker">
