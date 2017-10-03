@@ -45,9 +45,6 @@ public class CreateEditTask extends AppCompatActivity {
     private EditText date;
     private EditText desc;
 
-    private String titleString;
-    private String descString;
-
     private static String dateData;
     private static Calendar taskTime;
     private static int importanceColor = R.color.colorPrimaryMed;
@@ -228,8 +225,8 @@ public class CreateEditTask extends AppCompatActivity {
 
     private long saveNewTask() {
         // Get text from EditTexts at save
-        titleString = title.getText().toString();
-        descString = desc.getText().toString();
+        String titleString = title.getText().toString();
+        String descString = desc.getText().toString();
 
         // Store values to insert
         ContentValues values = new ContentValues();
@@ -271,14 +268,13 @@ public class CreateEditTask extends AppCompatActivity {
         setCalendar(Integer.parseInt(dateData.split("-")[0]),
                 Integer.parseInt(dateData.split("-")[1]),
                 Integer.parseInt(dateData.split("-")[2]));
-        Log.i("FillTask","Calendar set to " + taskTime.getTime().toString());
     }
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     private void saveTaskEdit(int id) {
         // Get text from EditTexts at save
-        titleString = title.getText().toString();
-        descString = desc.getText().toString();
+        String titleString = title.getText().toString();
+        String descString = desc.getText().toString();
 
         // Store values to insert
         ContentValues values = new ContentValues();

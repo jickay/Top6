@@ -58,7 +58,7 @@ public class AppWidget extends AppWidgetProvider {
 
         String action = intent.getAction();
         AppWidgetManager mgr = AppWidgetManager.getInstance(context);
-        if (action.equals("android.appwidget.action.APPWIDGET_UPDATE")) {
+        if (AppWidgetManager.ACTION_APPWIDGET_UPDATE.equals(action)) {
             Log.i("AppWidget","Intent received");
             RemoteViews remoteView = new RemoteViews(context.getPackageName(),R.layout.app_widget);
             ComponentName component = new ComponentName(context,ListWidgetService.class);

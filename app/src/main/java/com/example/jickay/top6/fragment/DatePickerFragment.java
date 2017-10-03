@@ -38,34 +38,29 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
 
     @Override
     public void onDateSet(DatePicker view, int year, int month, int day) {
-        String monthString = "";
+        String monthName = "";
         switch (month) {
-            case 0: monthString = "Jan"; break;
-            case 1: monthString = "Feb"; break;
-            case 2: monthString = "Mar"; break;
-            case 3: monthString = "Apr"; break;
-            case 4: monthString = "May"; break;
-            case 5: monthString = "Jun"; break;
-            case 6: monthString = "Jul"; break;
-            case 7: monthString = "Aug"; break;
-            case 8: monthString = "Sep"; break;
-            case 9: monthString = "Oct"; break;
-            case 10: monthString = "Nov"; break;
-            case 11: monthString = "Dec"; break;
+            case 0: monthName = "Jan"; break;
+            case 1: monthName = "Feb"; break;
+            case 2: monthName = "Mar"; break;
+            case 3: monthName = "Apr"; break;
+            case 4: monthName = "May"; break;
+            case 5: monthName = "Jun"; break;
+            case 6: monthName = "Jul"; break;
+            case 7: monthName = "Aug"; break;
+            case 8: monthName = "Sep"; break;
+            case 9: monthName = "Oct"; break;
+            case 10: monthName = "Nov"; break;
+            case 11: monthName = "Dec"; break;
         }
 
-        // Adding zero for single digit days for sorting
-        String dayString = "";
-        if (day < 10) {
-            dayString = "0" + Integer.toString(day);
-        } else {
-            dayString = Integer.toString(day);
-        }
+        String monthString = addLeadingZero(month);
+        String dayString = addLeadingZero(day);
 
-        String dateString = monthString + " " + dayString;
+        String dateString = monthName + " " + dayString;
 
         CreateEditTask.setDateData(Integer.toString(year) + "-" +
-                                    Integer.toString(month) + "-" +
+                                    monthString + "-" +
                                     dayString);
         CreateEditTask.setCalendar(year,month,day);
 
@@ -77,5 +72,16 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
     public void onCancel(DialogInterface dialog) {
         super.onCancel(dialog);
         dateField.clearFocus();
+    }
+
+    // Adding zero for single digit days for sorting
+    private String addLeadingZero(int value) {
+        String numString;
+        if (value < 10) {
+            numString = "0" + Integer.toString(value);
+        } else {
+            numString = Integer.toString(value);
+        }
+        return numString;
     }
 }

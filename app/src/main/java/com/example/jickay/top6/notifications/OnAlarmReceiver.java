@@ -27,8 +27,8 @@ public class OnAlarmReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
 
-        String title = intent.getStringExtra(TaskProvider.COLUMN_TITLE);
         int id = (int) intent.getLongExtra(TaskProvider.COLUMN_TASKID,0);
+        String title = intent.getStringExtra(TaskProvider.COLUMN_TITLE);
         int color = intent.getIntExtra(TaskProvider.COLUMN_IMPORTANCE,R.color.cardview_dark_background);
         int daysBefore = intent.getIntExtra("AlarmDaysBefore",0);
 

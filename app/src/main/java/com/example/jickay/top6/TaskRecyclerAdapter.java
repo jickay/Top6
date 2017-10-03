@@ -1,9 +1,11 @@
 package com.example.jickay.top6;
 
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -29,6 +31,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.example.jickay.top6.fragment.TaskFragment;
+import com.example.jickay.top6.notifications.ReminderManager;
 import com.example.jickay.top6.provider.TaskProvider;
 import com.example.jickay.top6.settings.SettingsActivity;
 
@@ -278,6 +281,13 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
         values.put(TaskProvider.COLUMN_DATE, newDateData);
         context.getContentResolver().update(delayDate, values, null, null);
 
+        // Update notifications
+//        cursor.moveToPosition(currentId);
+//        String titleString = cursor.getString(cursor.getColumnIndex(TaskProvider.COLUMN_TITLE));
+//        int importanceColor = getImportanceColor(cursor.getInt(cursor.getColumnIndex(TaskProvider.COLUMN_IMPORTANCE)));
+//        ReminderManager.setReminder(context,"warning",currentId,titleString, c, importanceColor);
+//        ReminderManager.setReminder(context,"overdue",currentId,titleString, c, R.color.colorOverdue);
+
         // Display new date on card
         viewHolder.task_date.setText(formatDate(newDateData));
         fragment.refreshCursor();
@@ -315,8 +325,11 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
                     }
 
                     // Clear notifications
+                    Intent myIntent = new Intent(context, AlarmManager.class);
+                    PendingIntent.getActivity(context, currentId, myIntent, PendingIntent.FLAG_UPDATE_CURRENT).cancel();
                     NotificationManager mgr = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
                     mgr.cancel(currentId);
+                    Log.i("Completion","Notification for task " + currentId + " is cancelled");
 
                     completeSnackbar(parent,viewHolder,currentId,dateString,taskPos,title,importanceColor);
                 } else {

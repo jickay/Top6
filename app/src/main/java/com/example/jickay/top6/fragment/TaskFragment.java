@@ -10,6 +10,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.RequiresApi;
 import android.support.v4.content.CursorLoader;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -68,7 +69,7 @@ public class TaskFragment extends Fragment {
         // Load new cursor to refresh view; Does not display any rows completed before
         Intent intent = new Intent(getContext(), ListWidgetService.class);
         intent.setAction("android.appwidget.action.APPWIDGET_UPDATE");
-        getContext().sendBroadcast(intent);
+        LocalBroadcastManager.getInstance(getContext()).sendBroadcast(intent);
         Log.i("Fragment","Broadcast intent to widget provider");
         refreshCursor();
 
